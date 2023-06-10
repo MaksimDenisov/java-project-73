@@ -1,0 +1,23 @@
+server:
+  error:
+    include-stacktrace: never
+
+spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  datasource:
+    #  SHOULD BE POSTGRES
+    username: ""
+    password: ""
+    url: "jdbc:h2:./taskManager"
+
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    ROOT: INFO

@@ -1,41 +1,94 @@
 plugins {
-	id 'application'
-	id 'checkstyle'
-	id 'org.springframework.boot' version '3.0.6'
-	id 'io.spring.dependency-management' version '1.1.0'
-	id 'jacoco'
+    id 'application'
+    id 'checkstyle'
+    id 'org.springframework.boot' version '3.0.6'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'jacoco'
+    id 'org.liquibase.gradle' version '2.2.0'
 }
 
 group = 'hexlet.code'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = '17'
-targetCompatibility =17
+targetCompatibility = 17
 
 compileJava {
-	options.release = 17
-	options.encoding = 'UTF-8'
+    options.release = 17
+    options.encoding = 'UTF-8'
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    annotationProcessor(
+            'org.projectlombok:lombok',
+            'com.querydsl:querydsl-apt:5.0.0:jakarta',
+            'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    )
+
+    implementation(
+            'org.springframework.boot:spring-boot-starter',
+            'org.springframework.boot:spring-boot-starter-web',
+            'org.springframework.boot:spring-boot-starter-data-jpa',
+            'org.liquibase:liquibase-core',
+            'com.querydsl:querydsl-jpa:5.0.0:jakarta',
+    )
+
+    liquibaseRuntime(
+            sourceSets.main.output,
+            'org.liquibase:liquibase-core',
+            'info.picocli:picocli:4.7.1',
+            'org.liquibase.ext:liquibase-hibernate6:4.21.1',
+            'org.springframework.boot:spring-boot-starter-data-jpa',
+            'com.h2database:h2',
+    )
+
+    runtimeOnly (
+            'com.h2database:h2',
+            'org.postgresql:postgresql:42.6.0'
+    )
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 jacocoTestReport {
-	dependsOn test // tests are required to run before generating the report
-	reports {
-		xml.required = true
-	}
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = true
+    }
+}
+
+diffChangelog {
+    dependsOn compileJava
+}
+
+// Настраиваем Liquibase
+liquibase {
+    activities {
+        main {
+            // Указываем путь, по которому будет сгенерирован файл миграции
+            changelogFile 'src/main/resources/db/changelog/db.changelog-master.yaml'
+            // Указывем источник, с которым будут сравниваться изменения
+            // Это база данных, изначально она пустая
+            url 'jdbc:h2:./taskManager'
+            // Сравниваем с моделями, задавая пакет
+            referenceUrl 'hibernate:spring:io.hexlet.javaspringblog.model.' +
+                    // Указываем диалект
+                    '?dialect=org.hibernate.dialect.H2Dialect' +
+                    // Указываем правила именования таблиц и столбцов,
+                    // чтобы они соответствовали правилам Spring
+                    '&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy'
+        }
+    }
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 task stage(dependsOn: [clean, installDist])
