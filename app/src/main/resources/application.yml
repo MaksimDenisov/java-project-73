@@ -1,6 +1,8 @@
 server:
   port: ${PORT:8080}
 
+base-url: /api
+
 spring:
   application:
     name: TaskManager
