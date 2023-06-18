@@ -170,9 +170,7 @@ public class UserControllerTest {
     public void shouldDeleteUser() throws Exception {
         assertEquals(2, userRepository.count());
         final User expectedUser = userRepository.findAll().get(0);
-        mockMvc.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId())
-                        .content(NEW_USER_TO)
-                        .contentType(APPLICATION_JSON))
+        mockMvc.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();

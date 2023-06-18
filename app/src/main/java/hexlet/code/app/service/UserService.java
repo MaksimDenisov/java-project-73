@@ -3,7 +3,6 @@ package hexlet.code.app.service;
 import hexlet.code.app.dto.UserTO;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
-import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ public class UserService {
                 .orElse(null);
     }
 
-
     public List<UserTO> getAll() {
         return userRepository.findAll().stream()
                 .map(this::toDto)
@@ -33,24 +31,15 @@ public class UserService {
     }
 
     public UserTO create(String firstName, String lastName, String email, String password) {
-        try {
-            return toDto(userRepository.save(new User(null, firstName, lastName,
-                    email, passwordEncoder.encode(password),
-                    LocalDateTime.now())));
-        } catch (ConstraintViolationException e) {
-            return null;
-        }
-
+        return toDto(userRepository.save(new User(null, firstName, lastName,
+                email, passwordEncoder.encode(password),
+                LocalDateTime.now())));
     }
 
     public UserTO update(Long id, String firstName, String lastName, String email, String password) {
-        try {
-            return toDto(userRepository.save(new User(id, firstName, lastName,
-                    email, passwordEncoder.encode(password),
-                    LocalDateTime.now())));
-        } catch (ConstraintViolationException e) {
-            return null;
-        }
+        return toDto(userRepository.save(new User(id, firstName, lastName,
+                email, passwordEncoder.encode(password),
+                LocalDateTime.now())));
     }
 
     public void delete(Long id) {
