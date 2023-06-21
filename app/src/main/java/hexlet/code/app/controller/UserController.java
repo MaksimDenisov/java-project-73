@@ -1,6 +1,7 @@
 package hexlet.code.app.controller;
 
 import hexlet.code.app.dto.UserTO;
+import hexlet.code.app.model.User;
 import hexlet.code.app.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 import static hexlet.code.app.controller.UserController.USER_CONTROLLER_PATH;
 
@@ -28,31 +28,25 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping()
-    public List<UserTO> getUserById() {
+    public List<User> getUserById() {
         return userService.getAll();
     }
 
     @GetMapping(ID)
-    public UserTO getUserById(@PathVariable final Long id) {
+    public User getUserById(@PathVariable final Long id) {
         return userService.getById(id);
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public Object createUser(@RequestBody Map<String, String> map) {
-        return userService.create(map.get("firstName"),
-                map.get("lastName"),
-                map.get("email"),
-                map.get("password"));
+    public User createUser(@RequestBody UserTO user) {
+        return userService.create(user);
     }
 
     @PutMapping(ID)
     @ResponseStatus(HttpStatus.OK)
-    public Object updateUser(@RequestBody Map<String, String> map, @PathVariable final Long id) {
-        return userService.update(id, map.get("firstName"),
-                map.get("lastName"),
-                map.get("email"),
-                map.get("password"));
+    public User updateUser(@RequestBody UserTO user, @PathVariable final Long id) {
+        return userService.update(id, user);
     }
 
     @DeleteMapping(ID)

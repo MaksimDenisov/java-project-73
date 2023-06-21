@@ -1,5 +1,6 @@
 package hexlet.code.app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -32,6 +33,7 @@ public class User {
     @Email
     private String email; //  - адрес электронной почты
     @NotBlank
+    @JsonIgnore
     private String password; //  - пароль
 
     private LocalDateTime createdAt; // дата создания (регистрации) пользователя

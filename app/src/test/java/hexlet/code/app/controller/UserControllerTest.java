@@ -2,7 +2,6 @@ package hexlet.code.app.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.app.config.SpringConfigForIT;
-import hexlet.code.app.dto.UserTO;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -49,21 +48,12 @@ public class UserControllerTest {
             "Petr", "Petrov",
             "petrov@mail.com", "petrov_pass",
             LocalDateTime.of(2023, 6, 10, 10, 0));
-    private static final User NEW_USER = new User(null,
-            "New", "New",
-            "new@mail.com", "new_pass",
-            LocalDateTime.of(2023, 6, 10, 11, 0));
-
-    private static final UserTO NEW_DTO = new UserTO(null, "new@mail.com", "New", "New",
-            LocalDateTime.of(2023, 6, 10, 11, 0));
-
     private static final String NEW_USER_TO = "{\n"
             + "    \"email\": \"new@mail.com\",\n"
             + "    \"firstName\": \"New\",\n"
             + "    \"lastName\": \"New\",\n"
             + "    \"password\": \"new_pass\"\n"
             + "}";
-
     private static final String INCORRECT_USER_TO = "{\n"
             + "    \"email\": \"new@mail.com\",\n"
             + "    \"firstName\": \"\",\n"
@@ -96,12 +86,12 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        final UserTO userTO = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals(expectedUser.getId(), userTO.getId());
-        assertEquals(expectedUser.getEmail(), userTO.getEmail());
-        assertEquals(expectedUser.getFirstName(), userTO.getFirstName());
-        assertEquals(expectedUser.getLastName(), userTO.getLastName());
+        assertEquals(expectedUser.getId(), user.getId());
+        assertEquals(expectedUser.getEmail(), user.getEmail());
+        assertEquals(expectedUser.getFirstName(), user.getFirstName());
+        assertEquals(expectedUser.getLastName(), user.getLastName());
     }
 
     @Test
@@ -111,7 +101,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        final List<UserTO> users = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final List<User> users = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
         assertThat(users).hasSize(2);
     }
@@ -127,11 +117,11 @@ public class UserControllerTest {
                 .andReturn()
                 .getResponse();
         assertEquals(3, userRepository.count());
-        final UserTO userTO = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals("new@mail.com", userTO.getEmail());
-        assertEquals("New", userTO.getFirstName());
-        assertEquals("New", userTO.getLastName());
+        assertEquals("new@mail.com", user.getEmail());
+        assertEquals("New", user.getFirstName());
+        assertEquals("New", user.getLastName());
     }
 
     @Test
@@ -153,12 +143,12 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        final UserTO userTO = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
         final User actualUser = userRepository.findById(expectedUser.getId()).get();
-        assertEquals("new@mail.com", userTO.getEmail());
-        assertEquals("New", userTO.getFirstName());
-        assertEquals("New", userTO.getLastName());
+        assertEquals("new@mail.com", user.getEmail());
+        assertEquals("New", user.getFirstName());
+        assertEquals("New", user.getLastName());
 
         assertEquals("new@mail.com", actualUser.getEmail());
         assertEquals("New", actualUser.getFirstName());
