@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 public class TaskControllerTest {
     @Autowired
-    TestUtils utils;
+    private TestUtils utils;
 
     @Autowired
     private MockMvc mockMvc;

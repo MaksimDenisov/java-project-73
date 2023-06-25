@@ -19,7 +19,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static hexlet.code.app.config.SpringConfigForIT.TEST_PROFILE;
@@ -44,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 public class UserControllerTest {
     @Autowired
-    TestUtils utils;
+    private TestUtils utils;
 
     @Autowired
     private MockMvc mockMvc;
@@ -65,7 +64,7 @@ public class UserControllerTest {
     @Test
     @DisplayName("Test data exist")
     public void shouldTestDataExist() throws IOException {
-        assertEquals(2,userRepository.count());
+        assertEquals(2, userRepository.count());
     }
 
     @Test

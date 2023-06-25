@@ -3,9 +3,11 @@ package hexlet.code.app.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
@@ -32,7 +34,12 @@ public class TestUtils {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private LabelRepository labelRepository;
+
+
     public void tearDown() {
+        labelRepository.deleteAll();
         taskRepository.deleteAll();
         taskStatusRepository.deleteAll();
         userRepository.deleteAll();
@@ -68,6 +75,15 @@ public class TestUtils {
 
     public List<Task> getTasks() throws IOException {
         return fromJson(Files.readString(getExpectedPath("tasks.json")), new TypeReference<>() {
+        });
+    }
+
+    public void saveLabels() throws IOException {
+        labelRepository.saveAll(getLabels());
+    }
+
+    public List<Label> getLabels() throws IOException {
+        return fromJson(Files.readString(getExpectedPath("labels.json")), new TypeReference<>() {
         });
     }
 

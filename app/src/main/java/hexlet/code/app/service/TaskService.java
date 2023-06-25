@@ -4,8 +4,6 @@ package hexlet.code.app.service;
 import hexlet.code.app.dto.TaskTO;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.repository.TaskRepository;
-import hexlet.code.app.repository.TaskStatusRepository;
-import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +30,7 @@ public class TaskService {
     }
 
     public Task create(TaskTO taskTO) {
-        Task task = new Task(null,taskTO.getName(),
+        Task task = new Task(null, taskTO.getName(),
                 taskTO.getDescription(),
                 taskStatusService.getById(taskTO.getTaskStatusId()),
                 userService.getById(taskTO.getExecutorId()), // TODO Get me

@@ -1,9 +1,11 @@
 package hexlet.code.app.controller;
 
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.app.config.SpringConfigForIT;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.TaskStatus;
-import hexlet.code.app.repository.TaskStatusRepository;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static hexlet.code.app.config.SpringConfigForIT.TEST_PROFILE;
-import static hexlet.code.app.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
+import static hexlet.code.app.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.app.controller.UserController.ID;
 import static hexlet.code.app.utils.TestUtils.asJson;
 import static hexlet.code.app.utils.TestUtils.fromJson;
@@ -40,8 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(TEST_PROFILE)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
-public class TaskStatusControllerTest {
-
+public class LabelControllerTest {
     @Autowired
     private TestUtils utils;
 
@@ -49,11 +50,11 @@ public class TaskStatusControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private TaskStatusRepository repository;
+    private LabelRepository repository;
 
     @BeforeEach
     public void setUp() throws IOException {
-        utils.saveTaskStatuses();
+        utils.saveLabels();
     }
 
     @AfterEach
@@ -63,65 +64,65 @@ public class TaskStatusControllerTest {
 
 
     @Test
-    @DisplayName("Get all status.")
+    @DisplayName("Get all labels.")
     public void shouldGetAll() throws Exception {
-        final var response = mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH))
+        final var response = mockMvc.perform(get(LABEL_CONTROLLER_PATH))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        final List<TaskStatus> statuses = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final List<Label> statuses = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
         assertThat(statuses).hasSize(2);
     }
 
     @Test
-    @DisplayName("Get status by id.")
+    @DisplayName("Get label by id.")
     public void shouldGetById() throws Exception {
-        final TaskStatus expectedTaskStatus = repository.findAll().get(0);
-        final var response = mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, expectedTaskStatus.getId()))
+        final Label expectedLabel = repository.findAll().get(0);
+        final var response = mockMvc.perform(get(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        final TaskStatus actualTaskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final Label actualLabel = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals(expectedTaskStatus.getId(), actualTaskStatus.getId());
-        assertEquals(expectedTaskStatus.getName(), actualTaskStatus.getName());
-        assertEquals(expectedTaskStatus.getCreatedAt(), actualTaskStatus.getCreatedAt());
+        assertEquals(expectedLabel.getId(), actualLabel.getId());
+        assertEquals(expectedLabel.getName(), actualLabel.getName());
+        assertEquals(expectedLabel.getCreatedAt(), actualLabel.getCreatedAt());
     }
 
     @Test
-    @DisplayName("Get 204 (No Content) when status by id not found.")
+    @DisplayName("Get 204 (No Content) when label by id not found.")
     public void shouldReturnNoContentWhenStatusWithIDNotFound() throws Exception {
-        mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, -1))
+        mockMvc.perform(get(LABEL_CONTROLLER_PATH + ID, -1))
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
     }
 
     @Test
-    @DisplayName("Create status.")
-    public void create() throws Exception {
+    @DisplayName("Create label.")
+    public void shouldCreate() throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("name", "Новый");
+        map.put("name", "Новая метка");
         assertEquals(2, repository.count());
-        final var response = mockMvc.perform(post(TASK_STATUS_CONTROLLER_PATH)
+        final var response = mockMvc.perform(post(LABEL_CONTROLLER_PATH)
                         .content(asJson(map))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
         assertEquals(3, repository.count());
-        final TaskStatus actualTaskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final TaskStatus actualLabel = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals("Новый", actualTaskStatus.getName());
+        assertEquals("Новая метка", actualLabel.getName());
     }
 
     @Test
-    @DisplayName("Delete status.")
-    public void shouldDeleteStatus() throws Exception {
+    @DisplayName("Delete label.")
+    public void shouldDelete() throws Exception {
         assertEquals(2, repository.count());
-        final TaskStatus expectedStatus = repository.findAll().get(0);
-        mockMvc.perform(delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()))
+        final Label expectedLabel = repository.findAll().get(0);
+        mockMvc.perform(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()))
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
