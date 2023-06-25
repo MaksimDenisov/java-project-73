@@ -1,6 +1,7 @@
 package hexlet.code.app.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -26,12 +27,17 @@ public class User {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id; // уникальный идентификатор пользователя, генерируется автоматически
+
     @NotBlank
     private String firstName; // имя пользователя
+
     @NotBlank
     private String lastName; // фамилия пользователя
+
     @Email
+    @Column(unique = true)
     private String email; //  - адрес электронной почты
+
     @NotBlank
     @JsonIgnore
     private String password; //  - пароль

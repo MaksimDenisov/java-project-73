@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.app.config.SpringConfigForIT;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.TaskStatusRepository;
+import hexlet.code.app.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 public class TaskStatusControllerTest {
 
-    private static final TaskStatus TASK_STATUS_1 = new TaskStatus("в работе");
-    private static final TaskStatus TASK_STATUS_2 = new TaskStatus("завершен");
+    @Autowired
+    TestUtils utils;
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,14 +52,13 @@ public class TaskStatusControllerTest {
     private TaskStatusRepository repository;
 
     @BeforeEach
-    public void setUp() {
-        repository.save(TASK_STATUS_1);
-        repository.save(TASK_STATUS_2);
+    public void setUp() throws IOException {
+        utils.saveTaskStatuses();
     }
 
     @AfterEach
     public void tearDown() {
-        repository.deleteAll();
+        utils.tearDown();
     }
 
 

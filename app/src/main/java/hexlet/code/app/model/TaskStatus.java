@@ -19,7 +19,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @Setter
 @Getter
-    public class TaskStatus {
+public class TaskStatus {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;

@@ -1,7 +1,8 @@
 package hexlet.code.app.controller;
 
-import hexlet.code.app.model.TaskStatus;
-import hexlet.code.app.service.TaskStatusService;
+import hexlet.code.app.dto.TaskTO;
+import hexlet.code.app.model.Task;
+import hexlet.code.app.service.TaskService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,44 +16,45 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
-import static hexlet.code.app.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
+import static hexlet.code.app.controller.TaskController.TASKS_CONTROLLER_PATH;
+
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("${base-url}" + TASK_STATUS_CONTROLLER_PATH)
-public class TaskStatusController {
-    public static final String TASK_STATUS_CONTROLLER_PATH = "/statuses";
+@RequestMapping("${base-url}" + TASKS_CONTROLLER_PATH)
+public class TaskController {
+    public static final String TASKS_CONTROLLER_PATH = "/tasks";
+
     public static final String ID = "/{id}";
 
-    private TaskStatusService taskStatusService;
+    private TaskService taskService;
 
     @GetMapping()
-    public List<TaskStatus> getAll() {
-        return taskStatusService.getAll();
+    public List<Task> getAll() {
+        return taskService.getAll();
     }
 
     @GetMapping(ID)
-    public TaskStatus getById(@PathVariable final Long id) {
-        return taskStatusService.getById(id);
+    public Task getById(@PathVariable final Long id) {
+        return taskService.getById(id);
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public TaskStatus create(@RequestBody Map<String, String> map) {
-        return taskStatusService.create(map.get("name"));
+    public Task create(@RequestBody TaskTO task) {
+        return taskService.create(task);
     }
 
     @PutMapping(ID)
     @ResponseStatus(HttpStatus.OK)
-    public TaskStatus update(@PathVariable("id") long id, @RequestBody Map<String, String> map) {
-        return taskStatusService.update(id, map.get("name"));
+    public Task update(@PathVariable("id") long id, @RequestBody TaskTO taskTO) {
+        return taskService.update(id, taskTO);
     }
 
     @DeleteMapping(ID)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable final Long id) {
-        taskStatusService.delete(id);
+        taskService.delete(id);
     }
 }

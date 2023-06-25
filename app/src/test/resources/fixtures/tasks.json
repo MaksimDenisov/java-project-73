@@ -1,0 +1,45 @@
+[
+  {
+    "id": 1,
+    "author": {
+      "id": 1,
+      "email": "ivan@google.com",
+      "firstName": "Ivan",
+      "lastName": "Petrov",
+      "createdAt": "2021-12-21T08:09:18.270Z"
+    },
+    "executor": {
+      "id": 2,
+      "email": "petr@yahoo.com",
+      "firstName": "Petr",
+      "lastName": "Sidorov",
+      "createdAt": "2021-12-21T08:09:18.270Z"
+    },
+    "taskStatus": {
+      "id": 2,
+      "name": "В работе",
+      "createdAt": "2021-12-21T08:09:18.270Z"
+    },
+    "name": "Задача #1",
+    "description": "Описание задачи #1",
+    "createdAt": "2021-12-21T08:09:18.270Z"
+  },
+  {
+    "id": 2,
+    "author": {
+      "id": 1,
+      "email": "ivan@google.com",
+      "firstName": "Ivan",
+      "lastName": "Petrov",
+      "createdAt": "2021-12-21T08:09:18.270Z"
+    },
+    "taskStatus": {
+      "id": 1,
+      "name": "Новый",
+      "createdAt": "2021-12-21T08:09:18.270Z"
+    },
+    "name": "Задача #2",
+    "description": "Описание задачи #2",
+    "createdAt": "2021-12-21T08:09:18.270Z"
+  }
+]

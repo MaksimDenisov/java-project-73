@@ -34,6 +34,7 @@ public class TaskStatusService {
 
     public TaskStatus update(long id, String name) {
         TaskStatus status = getById(id);
-        return taskStatusRepository.save(new TaskStatus(null, name, LocalDateTime.now()));
+        status.setName(name);
+        return taskStatusRepository.save(status);
     }
 }
