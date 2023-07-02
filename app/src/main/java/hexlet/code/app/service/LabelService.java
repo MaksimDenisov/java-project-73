@@ -18,13 +18,17 @@ public class LabelService {
         return labelRepository.findAll();
     }
 
+    public List<Label> getByIds(List<Long> ids) {
+        return labelRepository.findAllById(ids);
+    }
+
     public Label getById(Long id) {
         return labelRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Not found label with id %d", id)));
     }
 
     public Label create(String name) {
-        return labelRepository.save(new Label(null, name, LocalDateTime.now()));
+        return labelRepository.save(new Label(name));
     }
 
     public Label update(long id, String name) {

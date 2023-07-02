@@ -1,14 +1,19 @@
 package hexlet.code.app.service;
 
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.app.dto.TaskTO;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
+import hexlet.code.app.model.User;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @AllArgsConstructor
@@ -18,6 +23,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
     private final TaskStatusService taskStatusService;
+    private final LabelService labelService;
 
     public Task getById(Long id) {
         return taskRepository
@@ -25,17 +31,22 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException(String.format("Not found status with id %d", id)));
     }
 
-    public List<Task> getAll() {
-        return taskRepository.findAll();
+    public List<Task> getAll(Predicate predicate) {
+        List<Task> tasks = new ArrayList<>();
+        taskRepository.findAll(predicate).forEach(tasks::add);
+        return tasks;
     }
 
     public Task create(TaskTO taskTO) {
-        Task task = new Task(null, taskTO.getName(),
-                taskTO.getDescription(),
-                taskStatusService.getById(taskTO.getTaskStatusId()),
-                userService.getById(taskTO.getExecutorId()), // TODO Get me
-                userService.getById(taskTO.getExecutorId()),
-                LocalDateTime.now());
+        List<Label> labels = labelService.getByIds(taskTO.getLabelIds());
+        Task task = Task.builder()
+                .name(taskTO.getName())
+                .description(taskTO.getDescription())
+                .author(userService.getCurrentUser())
+                .executor(userService.getById(taskTO.getExecutorId()))
+                .taskStatus(taskStatusService.getById(taskTO.getTaskStatusId()))
+                .label(labels)
+                .build();
         return taskRepository.save(task);
     }
 
