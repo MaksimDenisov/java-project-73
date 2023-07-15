@@ -6,7 +6,6 @@ import hexlet.code.app.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -25,7 +24,7 @@ public class TaskStatusService {
     }
 
     public TaskStatus create(String name) {
-        return taskStatusRepository.save(new TaskStatus(null, name, LocalDateTime.now()));
+        return taskStatusRepository.save(new TaskStatus(name));
     }
 
     public void delete(Long id) {

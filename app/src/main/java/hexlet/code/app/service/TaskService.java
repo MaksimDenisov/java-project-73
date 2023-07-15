@@ -5,15 +5,12 @@ import com.querydsl.core.types.Predicate;
 import hexlet.code.app.dto.TaskTO;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
-import hexlet.code.app.model.User;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @AllArgsConstructor

@@ -8,7 +8,7 @@ public class Application {
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(Application.class)
-           .profiles("dev")
+           .profiles("dev") // TODO Add APP_ENV_PROFILE
            .run(args);
     }
 }

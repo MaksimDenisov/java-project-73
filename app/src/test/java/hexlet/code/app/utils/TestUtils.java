@@ -3,6 +3,7 @@ package hexlet.code.app.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hexlet.code.app.config.JWTHelper;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
@@ -13,17 +14,29 @@ import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
 public class TestUtils {
     private static final String RESOURCES = "src/test/resources/";
     private static final ObjectMapper MAPPER = new ObjectMapper().findAndRegisterModules();
+
+    @Autowired
+    private JWTHelper jwtHelper;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Autowired
     private UserRepository userRepository;
@@ -37,6 +50,7 @@ public class TestUtils {
     @Autowired
     private LabelRepository labelRepository;
 
+    public static final String USER_MAIL = "ivan@google.com";
 
     public void tearDown() {
         labelRepository.deleteAll();
@@ -45,6 +59,18 @@ public class TestUtils {
         userRepository.deleteAll();
     }
 
+    public ResultActions perform(final MockHttpServletRequestBuilder request, final String byUser) throws Exception {
+        final String token = jwtHelper.expiring(Map.of("username", byUser));
+        request.header(AUTHORIZATION, token);
+
+        return perform(request);
+    }
+
+    public ResultActions perform(final MockHttpServletRequestBuilder request) throws Exception {
+        return mockMvc.perform(request);
+    }
+
+    //TODO Move to test data
     // Populate users
     public List<User> getUsers() throws IOException {
         String usersJson = Files.readString(getExpectedPath("users.json"));

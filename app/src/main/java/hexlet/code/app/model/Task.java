@@ -1,23 +1,33 @@
 package hexlet.code.app.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static jakarta.persistence.TemporalType.TIMESTAMP;
 
-
 @Entity
+@Table(name = "tasks")
 @Getter
 @Setter
-@Table(name = "tasks")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -50,5 +60,5 @@ public class Task {
 
     @CreationTimestamp
     @Temporal(TIMESTAMP)
-    private Date createdAt;//  заполняется автоматически. Дата создания задачи
+    private Date createdAt; //  заполняется автоматически. Дата создания задачи
 }

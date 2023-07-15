@@ -16,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,6 +23,7 @@ import java.util.List;
 import static hexlet.code.app.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.app.controller.UserController.ID;
 import static hexlet.code.app.controller.UserController.USER_CONTROLLER_PATH;
+import static hexlet.code.app.utils.TestUtils.USER_MAIL;
 import static hexlet.code.app.utils.TestUtils.asJson;
 import static hexlet.code.app.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,9 +46,6 @@ public class UserControllerTest {
     private TestUtils utils;
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private UserRepository userRepository;
 
     @BeforeEach
@@ -68,25 +65,9 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Get user by id")
-    public void shouldGetUserById() throws Exception {
-        final User expectedUser = userRepository.findAll().get(0);
-        final var response = mockMvc.perform(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
-        assertEquals(expectedUser.getId(), user.getId());
-        assertEquals(expectedUser.getEmail(), user.getEmail());
-        assertEquals(expectedUser.getFirstName(), user.getFirstName());
-        assertEquals(expectedUser.getLastName(), user.getLastName());
-    }
-
-    @Test
     @DisplayName("Get all users.")
     public void shouldGetAllUsers() throws Exception {
-        final var response = mockMvc.perform(get(USER_CONTROLLER_PATH))
+        final var response = utils.perform(get(USER_CONTROLLER_PATH))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -94,11 +75,12 @@ public class UserControllerTest {
         });
         assertThat(users).hasSize(2);
     }
+
     @Test
     @DisplayName("Should save user.")
     public void shouldCreateUser() throws Exception {
         assertEquals(2, userRepository.count());
-        final var response = mockMvc.perform(post(USER_CONTROLLER_PATH)
+        final var response = utils.perform(post(USER_CONTROLLER_PATH)
                         .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -115,23 +97,49 @@ public class UserControllerTest {
     @Test
     @DisplayName("If the request contains invalid data, a response with the status code 422 should be returned.")
     public void shouldNotCreateIncorrectUser() throws Exception {
-        mockMvc.perform(post(USER_CONTROLLER_PATH)
+        utils.perform(post(USER_CONTROLLER_PATH)
                         .content(asJson(new UserTO("new@mail.com", "", "New", "new_pass")))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());
-        mockMvc.perform(post(USER_CONTROLLER_PATH)
+        utils.perform(post(USER_CONTROLLER_PATH)
                         .content(asJson(new UserTO("new@mail.com", "New", "", "")))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
+    @DisplayName("Get user by id")
+    public void shouldGetUserById() throws Exception {
+        final User expectedUser = userRepository.findAll().get(0);
+        final var response = utils.perform(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()), USER_MAIL)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
+        });
+        assertEquals(expectedUser.getId(), user.getId());
+        assertEquals(expectedUser.getEmail(), user.getEmail());
+        assertEquals(expectedUser.getFirstName(), user.getFirstName());
+        assertEquals(expectedUser.getLastName(), user.getLastName());
+    }
+
+    @Test
+    @DisplayName("Unauthorized get user by id.")
+    public void shouldGetUserByIdUnauthorized() throws Exception {
+        final User expectedUser = userRepository.findAll().get(0);
+        utils.perform(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+    }
+
+    @Test
     @DisplayName("Should update user.")
     public void shouldUpdateUser() throws Exception {
         final User expectedUser = userRepository.findAll().get(0);
-        final var response = mockMvc.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
+        final var response = utils.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
                         .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
-                        .contentType(APPLICATION_JSON))
+                        .contentType(APPLICATION_JSON), USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -148,14 +156,47 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Should delete user.")
+    @DisplayName("Unauthorized updating user.")
+    public void shouldNotUpdateUser() throws Exception {
+        final User expectedUser = userRepository.findAll().get(1);
+        utils.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId(), USER_MAIL)
+                        .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+        utils.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
+                        .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+    }
+
+    @Test
+    @DisplayName("Delete user.")
     public void shouldDeleteUser() throws Exception {
         assertEquals(2, userRepository.count());
         final User expectedUser = userRepository.findAll().get(0);
-        mockMvc.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
+        utils.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), USER_MAIL)
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
         assertEquals(1, userRepository.count());
+    }
+
+    @Test
+    @DisplayName("Unauthorized delete user.")
+    public void shouldNotDeleteUser() throws Exception {
+        assertEquals(2, userRepository.count());
+        final User expectedUser = userRepository.findAll().get(1);
+        utils.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+        utils.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), USER_MAIL)
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
     }
 }

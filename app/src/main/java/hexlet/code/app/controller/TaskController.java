@@ -1,14 +1,12 @@
 package hexlet.code.app.controller;
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.app.dto.TaskTO;
 import hexlet.code.app.model.Task;
-import hexlet.code.app.model.User;
 import hexlet.code.app.service.TaskService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import com.querydsl.core.types.Predicate;
+
 
 import java.util.List;
 

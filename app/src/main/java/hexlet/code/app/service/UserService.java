@@ -8,9 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-
 
 @Service
 @AllArgsConstructor
@@ -28,16 +26,25 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User create(UserTO user) {
-        return userRepository.save(new User(null, user.getFirstName(), user.getLastName(),
-                user.getEmail(), passwordEncoder.encode(user.getPassword()),
-                LocalDateTime.now()));
+    public User create(UserTO userTO) {
+        User user = User.builder()
+                .firstName(userTO.getFirstName())
+                .lastName(userTO.getLastName())
+                .email(userTO.getEmail())
+                .password(passwordEncoder.encode(userTO.getPassword()))
+                .build();
+        return userRepository.save(user);
     }
 
-    public User update(Long id, UserTO user) {
-        return userRepository.save(new User(id, user.getFirstName(), user.getLastName(),
-                user.getEmail(), passwordEncoder.encode(user.getPassword()),
-                LocalDateTime.now()));
+    public User update(Long id, UserTO userTO) {
+        User user = User.builder()
+                .id(id)
+                .firstName(userTO.getFirstName())
+                .lastName(userTO.getLastName())
+                .email(userTO.getEmail())
+                .password(userTO.getPassword())
+                .build();
+        return userRepository.save(user);
     }
 
     public void delete(Long id) {
@@ -49,7 +56,7 @@ public class UserService {
     }
 
     public User getCurrentUser() {
-        String currentUser  = getCurrentUserName();
+        String currentUser = getCurrentUserName();
         return userRepository.findByEmail(currentUser).get();
     }
 }
