@@ -25,8 +25,7 @@ import java.util.Map;
 import static hexlet.code.app.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.app.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.app.controller.UserController.ID;
-import static hexlet.code.app.utils.TestUtils.asJson;
-import static hexlet.code.app.utils.TestUtils.fromJson;
+import static hexlet.code.app.utils.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -46,9 +45,6 @@ public class TaskStatusControllerTest {
     private TestUtils utils;
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private TaskStatusRepository repository;
 
     @BeforeEach
@@ -61,11 +57,10 @@ public class TaskStatusControllerTest {
         utils.tearDown();
     }
 
-
     @Test
     @DisplayName("Get all status.")
     public void shouldGetAll() throws Exception {
-        final var response = mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH))
+        final var response = utils.perform(get(TASK_STATUS_CONTROLLER_PATH))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -78,7 +73,7 @@ public class TaskStatusControllerTest {
     @DisplayName("Get status by id.")
     public void shouldGetById() throws Exception {
         final TaskStatus expectedTaskStatus = repository.findAll().get(0);
-        final var response = mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, expectedTaskStatus.getId()))
+        final var response = utils.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, expectedTaskStatus.getId()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -86,13 +81,13 @@ public class TaskStatusControllerTest {
         });
         assertEquals(expectedTaskStatus.getId(), actualTaskStatus.getId());
         assertEquals(expectedTaskStatus.getName(), actualTaskStatus.getName());
-        assertEquals(expectedTaskStatus.getCreatedAt(), actualTaskStatus.getCreatedAt());
+        assertEquals(0, expectedTaskStatus.getCreatedAt().compareTo(actualTaskStatus.getCreatedAt()));
     }
 
     @Test
     @DisplayName("Get 204 (No Content) when status by id not found.")
     public void shouldReturnNoContentWhenStatusWithIDNotFound() throws Exception {
-        mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, -1))
+        utils.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, -1))
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
@@ -104,9 +99,9 @@ public class TaskStatusControllerTest {
         Map<String, String> map = new HashMap<>();
         map.put("name", "Новый");
         assertEquals(2, repository.count());
-        final var response = mockMvc.perform(post(TASK_STATUS_CONTROLLER_PATH)
+        final var response = utils.perform(post(TASK_STATUS_CONTROLLER_PATH)
                         .content(asJson(map))
-                        .contentType(APPLICATION_JSON))
+                        .contentType(APPLICATION_JSON), USER_MAIL)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
@@ -117,14 +112,39 @@ public class TaskStatusControllerTest {
     }
 
     @Test
+    @DisplayName("Unauthorized create status.")
+    public void createUnauthorized() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("name", "Новый");
+        assertEquals(2, repository.count());
+        final var response = utils.perform(post(TASK_STATUS_CONTROLLER_PATH)
+                        .content(asJson(map))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+    }
+
+    @Test
     @DisplayName("Delete status.")
     public void shouldDeleteStatus() throws Exception {
         assertEquals(2, repository.count());
         final TaskStatus expectedStatus = repository.findAll().get(0);
-        mockMvc.perform(delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()))
+        utils.perform(delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()), USER_MAIL)
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
         assertEquals(1, repository.count());
+    }
+
+    @Test
+    @DisplayName("Delete status.")
+    public void shouldNotDeleteStatus() throws Exception {
+        assertEquals(2, repository.count());
+        final TaskStatus expectedStatus = repository.findAll().get(0);
+        utils.perform(delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
     }
 }

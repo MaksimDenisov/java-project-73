@@ -23,7 +23,7 @@ public class LoginController {
     private JWTHelper jwtHelper;
     private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/login")
+/*    @PostMapping("/login")
     public String login(@RequestBody Map<String, String> map) {
         UserDetails user = userDetailsService.loadUserByUsername(map.get("email"));
         String password = map.get("password");
@@ -31,5 +31,5 @@ public class LoginController {
             throw new UsernameNotFoundException("");
         }
         return jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, user.getUsername()));
-    }
+    }*/
 }

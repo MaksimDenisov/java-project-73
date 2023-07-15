@@ -25,7 +25,7 @@ public class TaskStatusService {
     }
 
     public TaskStatus create(String name) {
-        return taskStatusRepository.save(new TaskStatus(null, name, LocalDateTime.now()));
+        return taskStatusRepository.save(new TaskStatus(name));
     }
 
     public void delete(Long id) {
