@@ -6,7 +6,9 @@ import hexlet.code.app.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -17,8 +19,8 @@ public class LabelService {
         return labelRepository.findAll();
     }
 
-    public List<Label> getByIds(List<Long> ids) {
-        return labelRepository.findAllById(ids);
+    public Set<Label> getByIds(List<Long> ids) {
+        return new HashSet<>(labelRepository.findAllById(ids));
     }
 
     public Label getById(Long id) {

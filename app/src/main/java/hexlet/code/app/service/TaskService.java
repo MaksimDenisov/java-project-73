@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @Service
@@ -35,14 +36,14 @@ public class TaskService {
     }
 
     public Task create(TaskTO taskTO) {
-        List<Label> labels = labelService.getByIds(taskTO.getLabelIds());
+        Set<Label> labels = labelService.getByIds(taskTO.getLabelIds());
         Task task = Task.builder()
                 .name(taskTO.getName())
                 .description(taskTO.getDescription())
                 .author(userService.getCurrentUser())
                 .executor(userService.getById(taskTO.getExecutorId()))
                 .taskStatus(taskStatusService.getById(taskTO.getTaskStatusId()))
-                .label(labels)
+                .labels(labels)
                 .build();
         return taskRepository.save(task);
     }
@@ -56,6 +57,7 @@ public class TaskService {
         task.setName(taskTO.getName());
         task.setDescription(taskTO.getDescription());
         task.setExecutor(userService.getById(taskTO.getExecutorId()));
+        task.setLabels(labelService.getByIds(taskTO.getLabelIds()));
         task.setTaskStatus(taskStatusService.getById(taskTO.getTaskStatusId()));
         return taskRepository.save(task);
     }

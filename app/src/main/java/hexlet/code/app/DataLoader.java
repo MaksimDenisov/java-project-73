@@ -15,7 +15,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Set;
 
 @Profile("dev")
 @Component
@@ -39,10 +39,8 @@ public class DataLoader implements ApplicationRunner {
         taskStatusRepository.save(taskStatusNew);
         taskStatusRepository.save(taskStatusWork);
 
-        Label labelBug = new Label("Баг");
-        Label labelFeature = new Label("Фича");
-        labelRepository.save(labelBug);
-        labelRepository.save(labelFeature);
+        Label labelBug = labelRepository.save(new Label("Баг"));
+        Label labelFeature = labelRepository.save(new Label("Фича"));
 
         Task task = Task.builder()
                 .name("Первая задача")
@@ -50,7 +48,7 @@ public class DataLoader implements ApplicationRunner {
                 .author(ivanov)
                 .executor(petrov)
                 .taskStatus(taskStatusNew)
-                .label(List.of(labelFeature))
+                .labels(Set.of(labelBug, labelFeature))
                 .build();
         taskRepository.save(task);
     }
