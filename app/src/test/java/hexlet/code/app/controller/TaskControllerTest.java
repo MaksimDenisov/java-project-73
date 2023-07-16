@@ -4,9 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.app.config.SpringConfigForIT;
 import hexlet.code.app.dto.TaskTO;
 import hexlet.code.app.model.Task;
-import hexlet.code.app.model.User;
 import hexlet.code.app.repository.TaskRepository;
-import hexlet.code.app.repository.UserRepository;
+import hexlet.code.app.utils.TestData;
 import hexlet.code.app.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,7 @@ import static hexlet.code.app.controller.TaskController.TASKS_CONTROLLER_PATH;
 import static hexlet.code.app.controller.UserController.ID;
 
 
-import static hexlet.code.app.utils.TestUtils.USER_MAIL;
+import static hexlet.code.app.utils.TestData.FIRST_USER_MAIL;
 import static hexlet.code.app.utils.TestUtils.asJson;
 import static hexlet.code.app.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,29 +50,27 @@ public class TaskControllerTest {
     private TestUtils utils;
 
     @Autowired
-    private TaskRepository taskRepository;
+    private TestData data;
 
     @Autowired
-    private UserRepository userRepository;
+    private TaskRepository taskRepository;
 
     @BeforeEach
     public void setUp() throws Exception {
-        utils.registerUsers();
-        List<User> users = userRepository.findAll();
-        users.forEach(System.out::println);
-        utils.saveTaskStatuses();
-        utils.saveTasks();
+        data.registerUsers();
+        data.saveTaskStatuses();
+        data.saveTasks();
     }
 
     @AfterEach
     public void tearDown() {
-        utils.tearDown();
+        data.clearAll();
     }
 
     @Test
     @DisplayName("Getting a list of tasks")
     public void shouldGetTasks() throws Exception {
-        final var response = utils.perform(get(TASKS_CONTROLLER_PATH), USER_MAIL)
+        final var response = utils.performByUser(get(TASKS_CONTROLLER_PATH), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -86,7 +83,7 @@ public class TaskControllerTest {
     @DisplayName("Getting a task by id")
     public void shouldGetTaskById() throws Exception {
         final Task expectedTask = taskRepository.findAll().get(0);
-        final var response = utils.perform(get(TASKS_CONTROLLER_PATH + ID, expectedTask.getId()), USER_MAIL)
+        final var response = utils.performByUser(get(TASKS_CONTROLLER_PATH + ID, expectedTask.getId()), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -102,9 +99,9 @@ public class TaskControllerTest {
     public void shouldCreateNewTask() throws Exception {
         //TODO Check labels
         TaskTO expectedTO = new TaskTO("Новое имя", "Новое описание", 2, 2, Collections.emptyList());
-        final var response = utils.perform(post(TASKS_CONTROLLER_PATH)
+        final var response = utils.performByUser(post(TASKS_CONTROLLER_PATH)
                         .content(asJson(expectedTO))
-                        .contentType(APPLICATION_JSON), USER_MAIL)
+                        .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
@@ -124,13 +121,13 @@ public class TaskControllerTest {
         long expectedId = taskRepository.findAll().get(0).getId();
         //TODO Check labels
         TaskTO expectedTO = new TaskTO("Новое имя", "Новое описание", 2, 2, Collections.emptyList());
-        utils.perform(put(TASKS_CONTROLLER_PATH + ID, expectedId)
+        utils.performByUser(put(TASKS_CONTROLLER_PATH + ID, expectedId)
                         .content(asJson(expectedTO))
-                        .contentType(APPLICATION_JSON), USER_MAIL)
+                        .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isOk());
         assertEquals(2, taskRepository.count());
 
-        final var response = utils.perform(get(TASKS_CONTROLLER_PATH + ID, expectedId), USER_MAIL)
+        final var response = utils.performByUser(get(TASKS_CONTROLLER_PATH + ID, expectedId), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -146,7 +143,7 @@ public class TaskControllerTest {
     @DisplayName("Deleting a task")
     public void shouldDeleteTask() throws Exception {
         assertThat(taskRepository.findAll()).hasSize(2);
-        utils.perform(delete(TASKS_CONTROLLER_PATH + ID, 1), USER_MAIL)
+        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, 1), FIRST_USER_MAIL)
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();

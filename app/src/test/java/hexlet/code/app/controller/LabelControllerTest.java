@@ -6,6 +6,7 @@ import hexlet.code.app.config.SpringConfigForIT;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.LabelRepository;
+import hexlet.code.app.utils.TestData;
 import hexlet.code.app.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,7 @@ import java.util.Map;
 import static hexlet.code.app.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.app.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.app.controller.UserController.ID;
-import static hexlet.code.app.utils.TestUtils.USER_MAIL;
+import static hexlet.code.app.utils.TestData.FIRST_USER_MAIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -41,26 +42,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 public class LabelControllerTest {
+
     @Autowired
     private TestUtils utils;
+
+    @Autowired
+    private TestData data;
 
     @Autowired
     private LabelRepository repository;
 
     @BeforeEach
     public void setUp() throws IOException {
-        utils.saveLabels();
+        data.saveLabels();
     }
 
     @AfterEach
     public void tearDown() {
-        utils.tearDown();
+        data.clearAll();
     }
 
     @Test
-    @DisplayName("Get all labels.")
-    public void shouldGetAll() throws Exception {
-        final var response = utils.perform(get(LABEL_CONTROLLER_PATH), USER_MAIL)
+        @DisplayName("Get all labels. Available for authorized users.")
+    public void testGetAll() throws Exception {
+        utils.checkNotAuthorizedRequestIsForbidden(get(LABEL_CONTROLLER_PATH));
+
+        final var response = utils.performByUser(get(LABEL_CONTROLLER_PATH), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -70,19 +77,19 @@ public class LabelControllerTest {
     }
 
     @Test
-    @DisplayName("Unauthorized get all labels.")
-    public void shouldNotGetAll() throws Exception {
-        final var response = utils.perform(get(LABEL_CONTROLLER_PATH))
-                .andExpect(status().isForbidden())
+    @DisplayName("Get label by id. Available for authorized users. If label not found get 204 (No Content)")
+    public void testGetOne() throws Exception {
+        final Label expectedLabel = repository.findAll().get(0);
+
+        utils.checkNotAuthorizedRequestIsForbidden(get(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()));
+
+        utils.performByUser(get(LABEL_CONTROLLER_PATH + ID, -1), FIRST_USER_MAIL)
+                .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
-    }
 
-    @Test
-    @DisplayName("Get label by id.")
-    public void shouldGetById() throws Exception {
-        final Label expectedLabel = repository.findAll().get(0);
-        final var response = utils.perform(get(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()), USER_MAIL)
+        final var response = utils
+                .performByUser(get(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -94,33 +101,19 @@ public class LabelControllerTest {
     }
 
     @Test
-    @DisplayName("Unauthorized get label by id.")
-    public void shouldNotGetById() throws Exception {
-        final Label expectedLabel = repository.findAll().get(0);
-        utils.perform(get(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
-    }
+    @DisplayName("Create label. Available for authorized users.")
+    public void testCreate() throws Exception {
+        Map<String, String> newLabel = new HashMap<>();
+        newLabel.put("name", "Новая метка");
 
-    @Test
-    @DisplayName("Get 204 (No Content) when label by id not found.")
-    public void shouldReturnNoContentWhenStatusWithIDNotFound() throws Exception {
-        utils.perform(get(LABEL_CONTROLLER_PATH + ID, -1), USER_MAIL)
-                .andExpect(status().isNoContent())
-                .andReturn()
-                .getResponse();
-    }
+        utils.checkNotAuthorizedRequestIsForbidden(post(LABEL_CONTROLLER_PATH)
+                .content(TestUtils.asJson(newLabel))
+                .contentType(APPLICATION_JSON));
 
-    @Test
-    @DisplayName("Create label.")
-    public void shouldCreate() throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put("name", "Новая метка");
         assertEquals(2, repository.count());
-        final var response = utils.perform(post(LABEL_CONTROLLER_PATH)
-                        .content(TestUtils.asJson(map))
-                        .contentType(APPLICATION_JSON), USER_MAIL)
+        final var response = utils.performByUser(post(LABEL_CONTROLLER_PATH)
+                        .content(TestUtils.asJson(newLabel))
+                        .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
@@ -131,38 +124,17 @@ public class LabelControllerTest {
     }
 
     @Test
-    @DisplayName("Unauthorized create label.")
-    public void shouldNotCreate() throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put("name", "Новая метка");
-        assertEquals(2, repository.count());
-        final var response = utils.perform(post(LABEL_CONTROLLER_PATH)
-                        .content(TestUtils.asJson(map))
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
-    }
-
-    @Test
-    @DisplayName("Delete label.")
-    public void shouldDelete() throws Exception {
-        assertEquals(2, repository.count());
+    @DisplayName("Delete label.  Available for authorized users.")
+    public void testDelete() throws Exception {
         final Label expectedLabel = repository.findAll().get(0);
-        utils.perform(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()), USER_MAIL)
+
+        utils.checkNotAuthorizedRequestIsForbidden(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()));
+
+        assertEquals(2, repository.count());
+        utils.performByUser(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()), FIRST_USER_MAIL)
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
         assertEquals(1, repository.count());
-    }
-
-    @Test
-    @DisplayName("Unauthorized delete label.")
-    public void shouldNotDelete() throws Exception {
-        final Label expectedLabel = repository.findAll().get(0);
-        utils.perform(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
     }
 }

@@ -5,6 +5,7 @@ import hexlet.code.app.config.SpringConfigForIT;
 import hexlet.code.app.dto.UserTO;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
+import hexlet.code.app.utils.TestData;
 import hexlet.code.app.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,7 @@ import java.util.List;
 import static hexlet.code.app.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.app.controller.UserController.ID;
 import static hexlet.code.app.controller.UserController.USER_CONTROLLER_PATH;
-import static hexlet.code.app.utils.TestUtils.USER_MAIL;
+import static hexlet.code.app.utils.TestData.FIRST_USER_MAIL;
 import static hexlet.code.app.utils.TestUtils.asJson;
 import static hexlet.code.app.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,27 +47,24 @@ public class UserControllerTest {
     private TestUtils utils;
 
     @Autowired
+    private TestData data;
+
+    @Autowired
     private UserRepository userRepository;
 
     @BeforeEach
     public void setUp() throws IOException {
-        utils.registerUsers();
+        data.registerUsers();
     }
 
     @AfterEach
     public void tearDown() {
-        utils.tearDown();
+        data.clearAll();
     }
 
     @Test
-    @DisplayName("Test data exist")
-    public void shouldTestDataExist() throws IOException {
-        assertEquals(2, userRepository.count());
-    }
-
-    @Test
-    @DisplayName("Get all users.")
-    public void shouldGetAllUsers() throws Exception {
+    @DisplayName("Get all users. Available for all users.")
+    public void testGetAll() throws Exception {
         final var response = utils.perform(get(USER_CONTROLLER_PATH))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -77,8 +75,27 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Should save user.")
-    public void shouldCreateUser() throws Exception {
+    @DisplayName("Get user by id. Available for all users.")
+    public void testGetOne() throws Exception {
+        final User expectedUser = userRepository.findAll().get(0);
+
+        utils.checkNotAuthorizedRequestIsForbidden(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()));
+
+        final var response = utils.performByUser(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()), FIRST_USER_MAIL)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
+        });
+        assertEquals(expectedUser.getId(), user.getId());
+        assertEquals(expectedUser.getEmail(), user.getEmail());
+        assertEquals(expectedUser.getFirstName(), user.getFirstName());
+        assertEquals(expectedUser.getLastName(), user.getLastName());
+    }
+
+    @Test
+    @DisplayName("Create user. Available for all users.")
+    public void testCreate() throws Exception {
         assertEquals(2, userRepository.count());
         final var response = utils.perform(post(USER_CONTROLLER_PATH)
                         .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
@@ -96,7 +113,7 @@ public class UserControllerTest {
 
     @Test
     @DisplayName("If the request contains invalid data, a response with the status code 422 should be returned.")
-    public void shouldNotCreateIncorrectUser() throws Exception {
+    public void testCreateIncorrectUser() throws Exception {
         utils.perform(post(USER_CONTROLLER_PATH)
                         .content(asJson(new UserTO("new@mail.com", "", "New", "new_pass")))
                         .contentType(APPLICATION_JSON))
@@ -108,38 +125,25 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Get user by id")
-    public void shouldGetUserById() throws Exception {
-        final User expectedUser = userRepository.findAll().get(0);
-        final var response = utils.perform(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()), USER_MAIL)
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
-        assertEquals(expectedUser.getId(), user.getId());
-        assertEquals(expectedUser.getEmail(), user.getEmail());
-        assertEquals(expectedUser.getFirstName(), user.getFirstName());
-        assertEquals(expectedUser.getLastName(), user.getLastName());
-    }
-
-    @Test
-    @DisplayName("Unauthorized get user by id.")
-    public void shouldGetUserByIdUnauthorized() throws Exception {
-        final User expectedUser = userRepository.findAll().get(0);
-        utils.perform(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
+    @DisplayName("Update user. Available for owner.")
+    public void testUpdate() throws Exception {
+        final User anotherUser = userRepository.findAll().get(1);
+        utils.perform(put(USER_CONTROLLER_PATH + ID, anotherUser.getId(), FIRST_USER_MAIL)
+                        .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
+                        .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andReturn()
                 .getResponse();
-    }
 
-    @Test
-    @DisplayName("Should update user.")
-    public void shouldUpdateUser() throws Exception {
+        utils.checkNotAuthorizedRequestIsForbidden(put(USER_CONTROLLER_PATH + ID, anotherUser.getId())
+                .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
+                .contentType(APPLICATION_JSON));
+
         final User expectedUser = userRepository.findAll().get(0);
-        final var response = utils.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
+
+        final var response = utils.performByUser(put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
                         .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
-                        .contentType(APPLICATION_JSON), USER_MAIL)
+                        .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -156,47 +160,24 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Unauthorized updating user.")
-    public void shouldNotUpdateUser() throws Exception {
-        final User expectedUser = userRepository.findAll().get(1);
-        utils.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId(), USER_MAIL)
-                        .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
-        utils.perform(put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
-                        .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
-    }
-
-    @Test
-    @DisplayName("Delete user.")
-    public void shouldDeleteUser() throws Exception {
+    @DisplayName("Delete user. Available for owner.")
+    public void testDelete() throws Exception {
         assertEquals(2, userRepository.count());
+
+        final User anotherUser = userRepository.findAll().get(1);
+        utils.performByUser(delete(USER_CONTROLLER_PATH + ID, anotherUser.getId()), FIRST_USER_MAIL)
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+
         final User expectedUser = userRepository.findAll().get(0);
-        utils.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), USER_MAIL)
+
+        utils.checkNotAuthorizedRequestIsForbidden(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()));
+
+        utils.performByUser(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), FIRST_USER_MAIL)
                 .andExpect(status().isNoContent())
                 .andReturn()
                 .getResponse();
         assertEquals(1, userRepository.count());
-    }
-
-    @Test
-    @DisplayName("Unauthorized delete user.")
-    public void shouldNotDeleteUser() throws Exception {
-        assertEquals(2, userRepository.count());
-        final User expectedUser = userRepository.findAll().get(1);
-        utils.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
-        utils.perform(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), USER_MAIL)
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
     }
 }
