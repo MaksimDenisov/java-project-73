@@ -3,6 +3,12 @@ package hexlet.code.app.controller;
 import hexlet.code.app.dto.UserTO;
 import hexlet.code.app.model.User;
 import hexlet.code.app.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +29,7 @@ import static hexlet.code.app.controller.UserController.USER_CONTROLLER_PATH;
 @AllArgsConstructor
 @RestController
 @RequestMapping("${base-url}" + USER_CONTROLLER_PATH)
+@Tag( name = "User")
 public class UserController {
     public static final String USER_CONTROLLER_PATH = "/users";
     public static final String ID = "/{id}";
@@ -33,23 +40,39 @@ public class UserController {
 
     private final UserService userService;
 
-
+    @Operation(summary = "Getting all users.")
+    @ApiResponses(@ApiResponse(responseCode = "200", content =
+        @Content(schema = @Schema(implementation = User.class))
+    ))
     @GetMapping()
-    public List<User> getUserById() {
+    public List<User> getAll() {
         return userService.getAll();
     }
 
+    @Operation(summary = "Getting one user.")
+    @ApiResponses(@ApiResponse(responseCode = "200", content =
+                    @Content(schema = @Schema(implementation = User.class))
+    ))
     @GetMapping(ID)
-    public User getUserById(@PathVariable final Long id) {
+    public User getOne(@PathVariable final Long id) {
         return userService.getById(id);
     }
 
+    @Operation(summary = "Creating user.")
+    @ApiResponses(@ApiResponse(responseCode = "200", content =
+    @Content(schema = @Schema(implementation = User.class))
+    ))
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@RequestBody UserTO user) {
         return userService.create(user);
     }
 
+
+    @Operation(summary = "Updating user.")
+    @ApiResponses(@ApiResponse(responseCode = "200", content =
+    @Content(schema = @Schema(implementation = User.class))
+    ))
     @PutMapping(ID)
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(ONLY_OWNER_BY_ID)
@@ -57,6 +80,7 @@ public class UserController {
         return userService.update(id, user);
     }
 
+    @Operation(summary = "Deleting user.")
     @DeleteMapping(ID)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(ONLY_OWNER_BY_ID)
