@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +33,8 @@ public class Label {
     private Long id;
 
     @NotEmpty
-    private String name; // обязательное. Минимум 1 символ. Названия меток могу быть любыми
+    @NotBlank
+    private String name;
 
     @CreationTimestamp
     @Temporal(TIMESTAMP)

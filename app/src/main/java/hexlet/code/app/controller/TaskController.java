@@ -2,7 +2,6 @@ package hexlet.code.app.controller;
 
 import com.querydsl.core.types.Predicate;
 import hexlet.code.app.dto.TaskTO;
-import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;

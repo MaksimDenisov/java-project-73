@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,7 +30,7 @@ import static hexlet.code.app.controller.UserController.USER_CONTROLLER_PATH;
 @AllArgsConstructor
 @RestController
 @RequestMapping("${base-url}" + USER_CONTROLLER_PATH)
-@Tag( name = "User")
+@Tag(name = "User")
 public class UserController {
     public static final String USER_CONTROLLER_PATH = "/users";
     public static final String ID = "/{id}";
@@ -64,7 +65,7 @@ public class UserController {
     ))
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@RequestBody UserTO user) {
+    public User createUser(@RequestBody @Valid UserTO user) {
         return userService.create(user);
     }
 
@@ -76,7 +77,7 @@ public class UserController {
     @PutMapping(ID)
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(ONLY_OWNER_BY_ID)
-    public User updateUser(@RequestBody UserTO user, @PathVariable final Long id) {
+    public User updateUser(@RequestBody @Valid UserTO user, @PathVariable final Long id) {
         return userService.update(id, user);
     }
 
