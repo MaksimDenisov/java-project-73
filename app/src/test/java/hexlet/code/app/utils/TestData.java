@@ -41,9 +41,9 @@ public class TestData {
 
 
     public void clearAll() {
-        labelRepository.deleteAll();
         taskRepository.deleteAll();
         taskStatusRepository.deleteAll();
+        labelRepository.deleteAll();
         userRepository.deleteAll();
     }
 
