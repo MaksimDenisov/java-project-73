@@ -1,13 +1,13 @@
 .DEFAULT_GOAL := build-run
 
 build:
-	make -C app clean build
+	./gradlew clean build
 install:
-	make -C app  install
+	./gradlew install
 run-dist:
-	make -C app run-dist
+	./build/install/app/bin/app
 report:
-	make -C app  report
+	./gradlew jacocoTestReport
 
 build-run: build install run-dist
 

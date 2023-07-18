@@ -1,8 +1,8 @@
 FROM gradle:7.6-jdk17
 
-WORKDIR /app
+WORKDIR /
 
-COPY /app .
+COPY / .
 
 RUN gradle build
 
