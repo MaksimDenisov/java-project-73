@@ -1,4 +1,4 @@
-    plugins {
+plugins {
     id 'application'
     id 'checkstyle'
     id 'org.springframework.boot' version '3.0.6'
