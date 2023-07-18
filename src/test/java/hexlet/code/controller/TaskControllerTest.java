@@ -73,7 +73,7 @@ public class TaskControllerTest {
 
     @Test
     @DisplayName("Getting a list of tasks")
-    public void shouldGetTasks() throws Exception {
+    public void testGetAll() throws Exception {
         final var response = utils.performByUser(get(TASKS_CONTROLLER_PATH), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
@@ -85,10 +85,10 @@ public class TaskControllerTest {
 
     @Test
     @DisplayName("Getting a task by id")
-    public void shouldGetTaskById() throws Exception {
+    public void testGetOne() throws Exception {
         final Task expectedTask = taskRepository.findAll().get(0);
         final var response = utils.performByUser(
-                get(TASKS_CONTROLLER_PATH + ID, expectedTask.getId()), FIRST_USER_MAIL)
+                        get(TASKS_CONTROLLER_PATH + ID, expectedTask.getId()), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -101,9 +101,9 @@ public class TaskControllerTest {
 
     @Test
     @DisplayName("Creating a new task")
-    public void shouldCreateNewTask() throws Exception {
+    public void testCreate() throws Exception {
         List<Label> labels = labelRepository.findAll();
-                labels.stream().map(Label::getId).toList();
+        labels.stream().map(Label::getId).toList();
         TaskTO expectedTO = new TaskTO("Новое имя", "Новое описание", 2, 2,
                 labels.stream().map(Label::getId).collect(Collectors.toList()));
         final var response = utils.performByUser(post(TASKS_CONTROLLER_PATH)
@@ -125,7 +125,7 @@ public class TaskControllerTest {
 
     @Test
     @DisplayName("Updating a task")
-    public void shouldUpdateTask() throws Exception {
+    public void testUpdate() throws Exception {
         long expectedId = taskRepository.findAll().get(0).getId();
         List<Label> labels = labelRepository.findAll();
         TaskTO expectedTO = new TaskTO("Новое имя", "Новое описание", 2, 2,
@@ -137,7 +137,7 @@ public class TaskControllerTest {
         assertEquals(2, taskRepository.count());
 
         final var response = utils.performByUser(
-                get(TASKS_CONTROLLER_PATH + ID, expectedId), FIRST_USER_MAIL)
+                        get(TASKS_CONTROLLER_PATH + ID, expectedId), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -152,7 +152,7 @@ public class TaskControllerTest {
 
     @Test
     @DisplayName("Deleting a task")
-    public void shouldDeleteTask() throws Exception {
+    public void testDelete() throws Exception {
         assertThat(taskRepository.findAll()).hasSize(2);
         utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, 1), FIRST_USER_MAIL)
                 .andExpect(status().isOk())

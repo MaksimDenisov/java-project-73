@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -47,11 +48,11 @@ public class Task {
     private TaskStatus taskStatus; //  обязательное. Связано с сущностью статуса
 
     @NotNull
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "author_id")
     private User author; //  обязательное. Создатель задачи, связан с сущностью пользователя
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "executor_id")
     private User executor; //  необязательное. Исполнитель задачи, связан с сущностью пользователя
 
