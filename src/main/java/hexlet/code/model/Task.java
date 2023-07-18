@@ -43,7 +43,7 @@ public class Task {
     private String description; // необязательное. Описание задачи, может быть любым
 
     @NotNull
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "task_status_id")
     private TaskStatus taskStatus; //  обязательное. Связано с сущностью статуса
 
