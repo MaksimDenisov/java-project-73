@@ -155,7 +155,7 @@ public class TaskControllerTest {
     public void shouldDeleteTask() throws Exception {
         assertThat(taskRepository.findAll()).hasSize(2);
         utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, 1), FIRST_USER_MAIL)
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
         assertThat(taskRepository.findAll()).hasSize(1);

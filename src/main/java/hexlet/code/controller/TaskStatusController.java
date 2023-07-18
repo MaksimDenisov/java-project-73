@@ -75,7 +75,7 @@ public class TaskStatusController {
 
     @Operation(summary = "Deleting status.")
     @DeleteMapping(ID)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable final Long id) {
         taskStatusService.delete(id);
     }

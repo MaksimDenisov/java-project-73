@@ -83,7 +83,7 @@ public class UserController {
 
     @Operation(summary = "Deleting user.")
     @DeleteMapping(ID)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(ONLY_OWNER_BY_ID)
     public void deleteUser(@PathVariable final Long id) {
         userService.delete(id);

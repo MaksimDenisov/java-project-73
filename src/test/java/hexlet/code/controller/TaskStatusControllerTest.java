@@ -154,7 +154,7 @@ public class TaskStatusControllerTest {
 
         utils.performByUser(
                 delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()), FIRST_USER_MAIL)
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
         assertEquals(1, repository.count());

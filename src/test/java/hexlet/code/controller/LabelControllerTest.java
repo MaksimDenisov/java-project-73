@@ -164,7 +164,7 @@ public class LabelControllerTest {
         assertEquals(2, repository.count());
         utils.performByUser(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()),
                         FIRST_USER_MAIL)
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
         assertEquals(1, repository.count());

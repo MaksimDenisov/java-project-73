@@ -185,7 +185,7 @@ public class UserControllerTest {
         utils.checkNotAuthorizedRequestIsForbidden(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()));
 
         utils.performByUser(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), FIRST_USER_MAIL)
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
         assertEquals(1, userRepository.count());
