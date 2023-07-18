@@ -9,15 +9,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration()
-@ComponentScan("hexlet.code.app")
+@ComponentScan("hexlet.code")
 public class RollbarConfig {
 
     @Value("${ROLLBAR_TOKEN:}")
     private String rollbarToken;
 
-    /**
-     * Register a Rollbar bean to configure App with Rollbar.
-     */
     @Bean
     public Rollbar rollbar() {
         return new Rollbar(getRollbarConfigs(rollbarToken));
