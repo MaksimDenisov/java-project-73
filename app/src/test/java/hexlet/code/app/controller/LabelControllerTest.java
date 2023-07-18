@@ -30,11 +30,13 @@ import static hexlet.code.app.controller.UserController.ID;
 import static hexlet.code.app.utils.TestData.FIRST_USER_MAIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -63,7 +65,7 @@ public class LabelControllerTest {
     }
 
     @Test
-        @DisplayName("Get all labels. Available for authorized users.")
+    @DisplayName("Get all labels. Available for authorized users.")
     public void testGetAll() throws Exception {
         utils.checkNotAuthorizedRequestIsForbidden(get(LABEL_CONTROLLER_PATH));
 
@@ -118,9 +120,31 @@ public class LabelControllerTest {
                 .andReturn()
                 .getResponse();
         assertEquals(3, repository.count());
-        final TaskStatus actualLabel = TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
+        final Label actualLabel = TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() {
         });
         assertEquals("Новая метка", actualLabel.getName());
+    }
+
+    @Test
+    @DisplayName("Update label. Available for authorized users.")
+    public void testUpdate() throws Exception {
+        Label label = repository.findAll().get(0);
+        utils.checkNotAuthorizedRequestIsForbidden(
+                put(LABEL_CONTROLLER_PATH + ID, label.getId())
+                        .content(TestUtils.asJson(label))
+                        .contentType(APPLICATION_JSON));
+        Map<String, String> updatedLabel = new HashMap<>();
+        updatedLabel.put("name", "Updated");
+        utils.performByUser(
+                        put(LABEL_CONTROLLER_PATH + ID, label.getId())
+                                .content(TestUtils.asJson(updatedLabel))
+                                .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        final Label actualLabel = repository.findById(label.getId()).orElse(null);
+        assertNotNull(actualLabel);
+        assertEquals("Updated", actualLabel.getName());
     }
 
     @Test

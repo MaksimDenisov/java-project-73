@@ -30,11 +30,13 @@ import static hexlet.code.app.utils.TestUtils.asJson;
 import static hexlet.code.app.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -115,6 +117,29 @@ public class TaskStatusControllerTest {
         final TaskStatus actualTaskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
         assertEquals("Новый", actualTaskStatus.getName());
+    }
+
+    @Test
+    @DisplayName("Update task status. Available for authorized users.")
+    public void testUpdate() throws Exception {
+        TaskStatus status = repository.findAll().get(0);
+        Map<String, String> map = new HashMap<>();
+        map.put("name", "Updated");
+        utils.checkNotAuthorizedRequestIsForbidden(
+                put(TASK_STATUS_CONTROLLER_PATH + ID, status.getId())
+                        .content(TestUtils.asJson(map))
+                        .contentType(APPLICATION_JSON));
+
+        utils.performByUser(
+                        put(TASK_STATUS_CONTROLLER_PATH + ID, status.getId())
+                                .content(TestUtils.asJson(map))
+                                .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        final TaskStatus actualStatus = repository.findById(status.getId()).orElse(null);
+        assertNotNull(actualStatus);
+        assertEquals("Updated", actualStatus.getName());
     }
 
     @Test
