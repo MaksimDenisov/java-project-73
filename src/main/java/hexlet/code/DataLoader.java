@@ -1,6 +1,6 @@
 package hexlet.code;
 
-import hexlet.code.dto.UserTO;
+import hexlet.code.dto.UserDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
@@ -29,8 +29,8 @@ public class DataLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        UserTO user1 = new UserTO("ivanov@mail.com", "Ivan", "Ivanov", "pass");
-        UserTO user2 = new UserTO("petrov@mail.com", "Petr", "Petrov", "pass");
+        UserDTO user1 = new UserDTO("ivanov@mail.com", "Ivan", "Ivanov", "pass");
+        UserDTO user2 = new UserDTO("petrov@mail.com", "Petr", "Petrov", "pass");
         User ivanov = userService.create(user1);
         User petrov = userService.create(user2);
 

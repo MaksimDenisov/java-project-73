@@ -2,7 +2,7 @@ package hexlet.code.service;
 
 
 import com.querydsl.core.types.Predicate;
-import hexlet.code.dto.TaskTO;
+import hexlet.code.dto.TaskDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.repository.TaskRepository;
@@ -35,30 +35,30 @@ public class TaskService {
         return tasks;
     }
 
-    public Task create(TaskTO taskTO) {
-        Set<Label> labels = labelService.getByIds(taskTO.getLabelIds());
+    public Task create(TaskDTO taskDTO) {
+        Set<Label> labels = labelService.getByIds(taskDTO.getLabelIds());
         Task task = Task.builder()
-                .name(taskTO.getName())
-                .description(taskTO.getDescription())
+                .name(taskDTO.getName())
+                .description(taskDTO.getDescription())
                 .author(userService.getCurrentUser())
-                .executor(userService.getById(taskTO.getExecutorId()))
-                .taskStatus(taskStatusService.getById(taskTO.getTaskStatusId()))
+                .executor(userService.getById(taskDTO.getExecutorId()))
+                .taskStatus(taskStatusService.getById(taskDTO.getTaskStatusId()))
                 .labels(labels)
                 .build();
         return taskRepository.save(task);
     }
 
     public void delete(Long id) {
-        taskRepository.findById(id).ifPresent(taskRepository::delete);
+        taskRepository.deleteById(id);
     }
 
-    public Task update(long id, TaskTO taskTO) {
+    public Task update(long id, TaskDTO taskDTO) {
         Task task = getById(id);
-        task.setName(taskTO.getName());
-        task.setDescription(taskTO.getDescription());
-        task.setExecutor(userService.getById(taskTO.getExecutorId()));
-        task.setLabels(labelService.getByIds(taskTO.getLabelIds()));
-        task.setTaskStatus(taskStatusService.getById(taskTO.getTaskStatusId()));
+        task.setName(taskDTO.getName());
+        task.setDescription(taskDTO.getDescription());
+        task.setExecutor(userService.getById(taskDTO.getExecutorId()));
+        task.setLabels(labelService.getByIds(taskDTO.getLabelIds()));
+        task.setTaskStatus(taskStatusService.getById(taskDTO.getTaskStatusId()));
         return taskRepository.save(task);
     }
 }

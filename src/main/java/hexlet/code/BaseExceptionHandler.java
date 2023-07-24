@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -31,6 +33,12 @@ public class BaseExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     public String userNotFoundExceptionHandler(UsernameNotFoundException exception) {
         rollbar.error(exception);
+        return exception.getMessage();
+    }
+
+    @ResponseStatus(NOT_FOUND)
+    @ExceptionHandler(NoSuchElementException.class)
+    public String noSuchElementExceptionHandler(NoSuchElementException exception) {
         return exception.getMessage();
     }
 

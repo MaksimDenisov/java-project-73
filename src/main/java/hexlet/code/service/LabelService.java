@@ -13,7 +13,7 @@ import java.util.Set;
 @Service
 @AllArgsConstructor
 public class LabelService {
-    private LabelRepository labelRepository;
+    private final LabelRepository labelRepository;
 
     public List<Label> getAll() {
         return labelRepository.findAll();

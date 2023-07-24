@@ -1,5 +1,6 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.LabelDTO;
 import hexlet.code.model.Label;
 import hexlet.code.service.LabelService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
 
@@ -34,7 +35,7 @@ public class LabelController {
 
     public static final String ID = "/{id}";
 
-    private LabelService labelService;
+    private final  LabelService labelService;
 
     @Operation(summary = "Getting all labels.")
     @ApiResponses(@ApiResponse(responseCode = "200", content =
@@ -60,8 +61,8 @@ public class LabelController {
     ))
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public Label create(@RequestBody Map<String, String> map) {
-        return labelService.create(map.get("name"));
+    public Label create(@RequestBody @Valid LabelDTO labelDTO) {
+        return labelService.create(labelDTO.getName());
     }
 
     @Operation(summary = "Updating new label.")
@@ -70,8 +71,8 @@ public class LabelController {
     ))
     @PutMapping(ID)
     @ResponseStatus(HttpStatus.OK)
-    public Label update(@PathVariable("id") long id, @RequestBody Map<String, String> map) {
-        return labelService.update(id, map.get("name"));
+    public Label update(@PathVariable("id") long id, @Valid @RequestBody LabelDTO labelDTO) {
+        return labelService.update(id, labelDTO.getName());
     }
 
     @Operation(summary = "Deleting label.")

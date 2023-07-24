@@ -1,6 +1,6 @@
 package hexlet.code.service;
 
-import hexlet.code.dto.UserTO;
+import hexlet.code.dto.UserDTO;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -26,23 +26,23 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User create(UserTO userTO) {
+    public User create(UserDTO userDTO) {
         User user = User.builder()
-                .firstName(userTO.getFirstName())
-                .lastName(userTO.getLastName())
-                .email(userTO.getEmail())
-                .password(passwordEncoder.encode(userTO.getPassword()))
+                .firstName(userDTO.getFirstName())
+                .lastName(userDTO.getLastName())
+                .email(userDTO.getEmail())
+                .password(passwordEncoder.encode(userDTO.getPassword()))
                 .build();
         return userRepository.save(user);
     }
 
-    public User update(Long id, UserTO userTO) {
+    public User update(Long id, UserDTO userDTO) {
         User user = User.builder()
                 .id(id)
-                .firstName(userTO.getFirstName())
-                .lastName(userTO.getLastName())
-                .email(userTO.getEmail())
-                .password(userTO.getPassword())
+                .firstName(userDTO.getFirstName())
+                .lastName(userDTO.getLastName())
+                .email(userDTO.getEmail())
+                .password(userDTO.getPassword())
                 .build();
         return userRepository.save(user);
     }

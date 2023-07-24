@@ -3,6 +3,7 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
+import hexlet.code.dto.LabelDTO;
 import hexlet.code.model.Label;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.utils.TestData;
@@ -19,9 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static hexlet.code.controller.LabelController.ID;
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
@@ -111,8 +110,7 @@ public class LabelControllerTest {
     @Test
     @DisplayName("Create label. Available for authorized users.")
     public void testCreate() throws Exception {
-        Map<String, String> newLabel = new HashMap<>();
-        newLabel.put("name", "Новая метка");
+        LabelDTO newLabel = new LabelDTO("Новая метка");
 
         utils.checkNotAuthorizedRequestIsForbidden(post(LABEL_CONTROLLER_PATH)
                 .content(asJson(newLabel))
@@ -139,8 +137,7 @@ public class LabelControllerTest {
                 put(LABEL_CONTROLLER_PATH + ID, label.getId())
                         .content(asJson(label))
                         .contentType(APPLICATION_JSON));
-        Map<String, String> updatedLabel = new HashMap<>();
-        updatedLabel.put("name", "Updated");
+        LabelDTO updatedLabel = new LabelDTO("Updated");
         utils.performByUser(
                         put(LABEL_CONTROLLER_PATH + ID, label.getId())
                                 .content(asJson(updatedLabel))

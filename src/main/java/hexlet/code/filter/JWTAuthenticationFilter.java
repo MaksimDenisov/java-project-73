@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 
 import hexlet.code.config.JWTHelper;
-import hexlet.code.dto.LoginTO;
+import hexlet.code.dto.LoginDTO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,7 +37,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(final HttpServletRequest request,
                                                 final HttpServletResponse response) throws AuthenticationException {
-        final LoginTO loginData = getLoginData(request);
+        final LoginDTO loginData = getLoginData(request);
         final var authRequest = new UsernamePasswordAuthenticationToken(
                 loginData.getEmail(),
                 loginData.getPassword()
@@ -46,12 +46,12 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         return getAuthenticationManager().authenticate(authRequest);
     }
 
-    private LoginTO getLoginData(final HttpServletRequest request) throws AuthenticationException {
+    private LoginDTO getLoginData(final HttpServletRequest request) throws AuthenticationException {
         try {
             final String json = request.getReader()
                     .lines()
                     .collect(Collectors.joining());
-            return MAPPER.readValue(json, LoginTO.class);
+            return MAPPER.readValue(json, LoginDTO.class);
         } catch (IOException e) {
             throw new BadCredentialsException("Can't extract login data from request");
         }

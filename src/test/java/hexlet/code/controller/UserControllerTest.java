@@ -2,7 +2,7 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
-import hexlet.code.dto.UserTO;
+import hexlet.code.dto.UserDTO;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.TestData;
@@ -101,7 +101,7 @@ public class UserControllerTest {
         final var response = utils.perform(
                         post(USER_CONTROLLER_PATH)
                                 .content(asJson(
-                                        new UserTO("new@mail.com", "New",
+                                        new UserDTO("new@mail.com", "New",
                                                 "New", "new_pass")))
                                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -119,12 +119,12 @@ public class UserControllerTest {
     @DisplayName("If the request contains invalid data, a response with the status code 422 should be returned.")
     public void testCreateIncorrectUser() throws Exception {
         utils.perform(post(USER_CONTROLLER_PATH)
-                        .content(asJson(new UserTO("new@mail.com", "",
+                        .content(asJson(new UserDTO("new@mail.com", "",
                                 "New", "new_pass")))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());
         utils.perform(post(USER_CONTROLLER_PATH)
-                        .content(asJson(new UserTO("new@mail.com", "New",
+                        .content(asJson(new UserDTO("new@mail.com", "New",
                                 "", "")))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());
@@ -135,7 +135,7 @@ public class UserControllerTest {
     public void testUpdate() throws Exception {
         final User anotherUser = userRepository.findAll().get(1);
         utils.perform(put(USER_CONTROLLER_PATH + ID, anotherUser.getId(), FIRST_USER_MAIL)
-                        .content(asJson(new UserTO("new@mail.com", "New",
+                        .content(asJson(new UserDTO("new@mail.com", "New",
                                 "New", "new_pass")))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden())
@@ -143,14 +143,14 @@ public class UserControllerTest {
                 .getResponse();
 
         utils.checkNotAuthorizedRequestIsForbidden(put(USER_CONTROLLER_PATH + ID, anotherUser.getId())
-                .content(asJson(new UserTO("new@mail.com", "New", "New", "new_pass")))
+                .content(asJson(new UserDTO("new@mail.com", "New", "New", "new_pass")))
                 .contentType(APPLICATION_JSON));
 
         final User expectedUser = userRepository.findAll().get(0);
 
         final var response = utils.performByUser(
                         put(USER_CONTROLLER_PATH + ID, expectedUser.getId())
-                                .content(asJson(new UserTO("new@mail.com", "New",
+                                .content(asJson(new UserDTO("new@mail.com", "New",
                                         "New", "new_pass")))
                                 .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isOk())

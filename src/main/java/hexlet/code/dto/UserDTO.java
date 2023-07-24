@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class UserTO {
+public class UserDTO {
     @NotBlank
     @Email
     private String email;

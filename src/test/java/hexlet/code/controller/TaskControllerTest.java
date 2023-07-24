@@ -2,7 +2,7 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
-import hexlet.code.dto.TaskTO;
+import hexlet.code.dto.TaskDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.repository.LabelRepository;
@@ -104,7 +104,7 @@ public class TaskControllerTest {
     public void testCreate() throws Exception {
         List<Label> labels = labelRepository.findAll();
         labels.stream().map(Label::getId).toList();
-        TaskTO expectedTO = new TaskTO("Новое имя", "Новое описание", 2, 2,
+        TaskDTO expectedTO = new TaskDTO("Новое имя", "Новое описание", 2, 2,
                 labels.stream().map(Label::getId).collect(Collectors.toList()));
         final var response = utils.performByUser(post(TASKS_CONTROLLER_PATH)
                         .content(asJson(expectedTO))
@@ -128,7 +128,7 @@ public class TaskControllerTest {
     public void testUpdate() throws Exception {
         long expectedId = taskRepository.findAll().get(0).getId();
         List<Label> labels = labelRepository.findAll();
-        TaskTO expectedTO = new TaskTO("Новое имя", "Новое описание", 2, 2,
+        TaskDTO expectedTO = new TaskDTO("Новое имя", "Новое описание", 2, 2,
                 labels.stream().map(Label::getId).collect(Collectors.toList()));
         utils.performByUser(put(TASKS_CONTROLLER_PATH + ID, expectedId)
                         .content(asJson(expectedTO))
@@ -153,9 +153,14 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Deleting a task")
     public void testDelete() throws Exception {
-        assertThat(taskRepository.findAll()).hasSize(2);
-        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, 1), FIRST_USER_MAIL)
+        List<Task> tasks = taskRepository.findAll();
+        assertThat(tasks).hasSize(2);
+        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, tasks.get(0).getId()), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, -1), FIRST_USER_MAIL)
+                .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse();
         assertThat(taskRepository.findAll()).hasSize(1);

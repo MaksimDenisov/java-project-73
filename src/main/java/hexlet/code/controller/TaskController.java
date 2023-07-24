@@ -1,7 +1,7 @@
 package hexlet.code.controller;
 
 import com.querydsl.core.types.Predicate;
-import hexlet.code.dto.TaskTO;
+import hexlet.code.dto.TaskDTO;
 import hexlet.code.model.Task;
 import hexlet.code.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,10 +35,13 @@ import static hexlet.code.controller.TaskController.TASKS_CONTROLLER_PATH;
 @Tag(name = "Tasks")
 public class TaskController {
     public static final String TASKS_CONTROLLER_PATH = "/tasks";
-
     public static final String ID = "/{id}";
 
-    private TaskService taskService;
+    private static final String ONLY_OWNER_BY_ID = """
+            @taskRepository.findById(#id).get().getAuthor().getEmail() == authentication.getName()
+        """;
+
+    private final TaskService taskService;
 
     @Operation(summary = "Getting all tasks.")
     @ApiResponses(@ApiResponse(responseCode = "200", content =
@@ -63,7 +67,7 @@ public class TaskController {
     ))
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public Task create(@RequestBody TaskTO task) {
+    public Task create(@RequestBody TaskDTO task) {
         return taskService.create(task);
     }
 
@@ -73,13 +77,17 @@ public class TaskController {
     ))
     @PutMapping(ID)
     @ResponseStatus(HttpStatus.OK)
-    public Task update(@PathVariable("id") long id, @RequestBody TaskTO taskTO) {
-        return taskService.update(id, taskTO);
+    public Task update(@PathVariable("id") long id, @RequestBody TaskDTO taskDTO) {
+        return taskService.update(id, taskDTO);
     }
 
     @Operation(summary = "Deleting task.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task deleted")
+    })
     @DeleteMapping(ID)
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(ONLY_OWNER_BY_ID)
     public void delete(@PathVariable final Long id) {
         taskService.delete(id);
     }

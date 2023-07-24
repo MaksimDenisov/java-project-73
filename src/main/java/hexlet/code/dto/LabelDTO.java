@@ -1,20 +1,19 @@
 package hexlet.code.dto;
 
+
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class TaskTO {
+@Setter
+public class LabelDTO {
+    @NotEmpty
     @NotBlank
     private String name;
-    private String description;
-    private long executorId;
-    private long taskStatusId;
-    private List<Long> labelIds;
 }
