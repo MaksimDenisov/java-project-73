@@ -31,6 +31,7 @@ import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -81,7 +82,7 @@ public class TaskStatusControllerTest {
     public void testGetOne() throws Exception {
         final TaskStatus expectedTaskStatus = repository.findAll().get(0);
         final var response = utils.perform(
-                get(TASK_STATUS_CONTROLLER_PATH + ID, expectedTaskStatus.getId()))
+                        get(TASK_STATUS_CONTROLLER_PATH + ID, expectedTaskStatus.getId()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -92,7 +93,7 @@ public class TaskStatusControllerTest {
         assertEquals(0, expectedTaskStatus.getCreatedAt().compareTo(actualTaskStatus.getCreatedAt()));
 
         utils.perform(get(TASK_STATUS_CONTROLLER_PATH + ID, -1))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse();
     }
@@ -146,17 +147,17 @@ public class TaskStatusControllerTest {
     @Test
     @DisplayName("Delete status. Available for authorized users.")
     public void testDelete() throws Exception {
-        final TaskStatus expectedStatus = repository.findAll().get(0);
+        final Long id = repository.findAll().get(0).getId();
         assertEquals(2, repository.count());
 
         utils.checkNotAuthorizedRequestIsForbidden(
-                delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()));
+                delete(TASK_STATUS_CONTROLLER_PATH + ID, id));
 
         utils.performByUser(
-                delete(TASK_STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()), FIRST_USER_MAIL)
+                        delete(TASK_STATUS_CONTROLLER_PATH + ID, id), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        assertEquals(1, repository.count());
+        assertFalse(repository.existsById(id));
     }
 }

@@ -1,14 +1,11 @@
 .DEFAULT_GOAL := build-run
 
-build:
-	./gradlew clean build
-install:
-	./gradlew install
-run-dist:
-	./build/install/app/bin/app
+run-dev:
+	./gradlew bootRun --args='--spring.profiles.active=dev'
 report:
 	./gradlew jacocoTestReport
+generate-migrations:
+	gradle diffChangeLog
+checkstyle:
+	./gradlew checkstyleMain checkstyleTest
 
-build-run: build install run-dist
-
-.PHONY: build

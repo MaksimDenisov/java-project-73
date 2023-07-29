@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
+import java.time.Instant;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static jakarta.persistence.TemporalType.TIMESTAMP;
@@ -33,7 +33,7 @@ public class TaskStatus {
 
     @CreationTimestamp
     @Temporal(TIMESTAMP)
-    private Date createdAt;
+    private Instant createdAt;
 
     public TaskStatus(String name) {
         this.name = name;

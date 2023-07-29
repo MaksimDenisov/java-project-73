@@ -29,6 +29,7 @@ import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -89,7 +90,7 @@ public class LabelControllerTest {
         utils.performByUser(
                         get(LABEL_CONTROLLER_PATH + ID, -1),
                         FIRST_USER_MAIL)
-                .andExpect(status().isNoContent())
+                .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse();
 
@@ -154,16 +155,16 @@ public class LabelControllerTest {
     @DisplayName("Delete label.  Available for authorized users.")
     public void testDelete() throws Exception {
         final Label expectedLabel = repository.findAll().get(0);
-
+        Long id  = expectedLabel.getId();
         utils.checkNotAuthorizedRequestIsForbidden(
-                delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()));
+                delete(LABEL_CONTROLLER_PATH + ID, id));
 
         assertEquals(2, repository.count());
-        utils.performByUser(delete(LABEL_CONTROLLER_PATH + ID, expectedLabel.getId()),
+        utils.performByUser(delete(LABEL_CONTROLLER_PATH + ID, id),
                         FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        assertEquals(1, repository.count());
+        assertFalse(repository.existsById(id));
     }
 }

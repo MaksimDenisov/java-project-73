@@ -2,7 +2,6 @@ package hexlet.code.service;
 
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
-import hexlet.code.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +13,7 @@ public class TaskStatusService {
     private final TaskStatusRepository taskStatusRepository;
 
     public TaskStatus getById(Long id) {
-        return taskStatusRepository
-                .findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Not found status with id %d", id)));
+        return taskStatusRepository.findById(id).orElseThrow();
     }
 
     public List<TaskStatus> getAll() {
@@ -28,7 +25,7 @@ public class TaskStatusService {
     }
 
     public void delete(Long id) {
-        taskStatusRepository.findById(id).ifPresent(taskStatusRepository::delete);
+        taskStatusRepository.deleteById(id);
     }
 
     public TaskStatus update(long id, String name) {

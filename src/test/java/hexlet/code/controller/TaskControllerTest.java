@@ -32,6 +32,7 @@ import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -153,9 +154,8 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Deleting a task")
     public void testDelete() throws Exception {
-        List<Task> tasks = taskRepository.findAll();
-        assertThat(tasks).hasSize(2);
-        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, tasks.get(0).getId()), FIRST_USER_MAIL)
+        Long id = taskRepository.findAll().get(0).getId();
+        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, id), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -163,6 +163,6 @@ public class TaskControllerTest {
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse();
-        assertThat(taskRepository.findAll()).hasSize(1);
+        assertFalse(taskRepository.existsById(id));
     }
 }

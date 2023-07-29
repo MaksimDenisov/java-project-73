@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Set;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -38,7 +38,7 @@ public class Label {
 
     @CreationTimestamp
     @Temporal(TIMESTAMP)
-    private Date createdAt;
+    private Instant createdAt;
 
     @ManyToMany(mappedBy = "labels")
     @JsonIgnore

@@ -6,7 +6,6 @@ import hexlet.code.dto.TaskDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.repository.TaskRepository;
-import hexlet.code.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +23,7 @@ public class TaskService {
     private final LabelService labelService;
 
     public Task getById(Long id) {
-        return taskRepository
-                .findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Not found status with id %d", id)));
+        return taskRepository.findById(id).orElseThrow();
     }
 
     public List<Task> getAll(Predicate predicate) {

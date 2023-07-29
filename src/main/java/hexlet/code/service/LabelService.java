@@ -2,7 +2,6 @@ package hexlet.code.service;
 
 import hexlet.code.model.Label;
 import hexlet.code.repository.LabelRepository;
-import hexlet.code.service.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +23,7 @@ public class LabelService {
     }
 
     public Label getById(Long id) {
-        return labelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Not found label with id %d", id)));
+        return labelRepository.findById(id).orElseThrow();
     }
 
     public Label create(String name) {
@@ -39,6 +37,6 @@ public class LabelService {
     }
 
     public void delete(Long id) {
-        labelRepository.findById(id).ifPresent(labelRepository::delete);
+        labelRepository.deleteById(id);
     }
 }

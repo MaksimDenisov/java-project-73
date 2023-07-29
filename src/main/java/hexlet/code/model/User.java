@@ -1,7 +1,6 @@
 package hexlet.code.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
+import java.time.Instant;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static jakarta.persistence.TemporalType.TIMESTAMP;
@@ -50,5 +49,5 @@ public class User {
 
     @CreationTimestamp
     @Temporal(TIMESTAMP)
-    private Date createdAt; //  заполняется автоматически. Дата создания задачи
+    private Instant createdAt; //  заполняется автоматически. Дата создания задачи
 }
