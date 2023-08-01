@@ -18,8 +18,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User getById(Long id) {
-        return userRepository.findById(id)
-                .orElse(null);
+        return userRepository.findById(id).orElseThrow();
     }
 
     public List<User> getAll() {
@@ -37,18 +36,16 @@ public class UserService {
     }
 
     public User update(Long id, UserDTO userDTO) {
-        User user = User.builder()
-                .id(id)
-                .firstName(userDTO.getFirstName())
-                .lastName(userDTO.getLastName())
-                .email(userDTO.getEmail())
-                .password(userDTO.getPassword())
-                .build();
+        User user = getById(id);
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
         return userRepository.save(user);
     }
 
     public void delete(Long id) {
-        userRepository.findById(id).ifPresent(userRepository::delete);
+        userRepository.deleteById(id);
     }
 
     public String getCurrentUserName() {

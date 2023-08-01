@@ -24,10 +24,12 @@ import java.util.List;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static hexlet.code.utils.TestData.FIRST_USER_MAIL;
+import static hexlet.code.utils.TestData.SECOND_USER_MAIL;
 import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -71,7 +73,7 @@ public class UserControllerTest {
                 .getResponse();
         final List<User> users = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(users).hasSize(2);
+        assertThat(users).hasSize((int) userRepository.count());
     }
 
     @Test
@@ -97,7 +99,8 @@ public class UserControllerTest {
     @Test
     @DisplayName("Create user. Available for all users.")
     public void testCreate() throws Exception {
-        assertEquals(2, userRepository.count());
+        long countBeforeOperation = userRepository.count();
+
         final var response = utils.perform(
                         post(USER_CONTROLLER_PATH)
                                 .content(asJson(
@@ -107,12 +110,14 @@ public class UserControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
-        assertEquals(3, userRepository.count());
-        final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
+        assertEquals(countBeforeOperation + 1, userRepository.count());
+        final User resultUser = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals("new@mail.com", user.getEmail());
-        assertEquals("New", user.getFirstName());
-        assertEquals("New", user.getLastName());
+        final User actualUser = userRepository.findById(resultUser.getId()).orElse(null);
+        assertNotNull(actualUser);
+        assertEquals("new@mail.com", actualUser.getEmail());
+        assertEquals("New", actualUser.getFirstName());
+        assertEquals("New", actualUser.getLastName());
     }
 
     @Test
@@ -172,7 +177,7 @@ public class UserControllerTest {
     @Test
     @DisplayName("Delete user. Available for owner.")
     public void testDelete() throws Exception {
-        assertEquals(2, userRepository.count());
+        long countBeforeOperation = userRepository.count();
 
         final User anotherUser = userRepository.findAll().get(1);
         utils.performByUser(delete(USER_CONTROLLER_PATH + ID, anotherUser.getId()), FIRST_USER_MAIL)
@@ -180,14 +185,21 @@ public class UserControllerTest {
                 .andReturn()
                 .getResponse();
 
-        final User expectedUser = userRepository.findAll().get(0);
+        final long id = userRepository.findAll().get(0).getId();
 
-        utils.checkNotAuthorizedRequestIsForbidden(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()));
+        utils.checkNotAuthorizedRequestIsForbidden(delete(USER_CONTROLLER_PATH + ID, id));
 
-        utils.performByUser(delete(USER_CONTROLLER_PATH + ID, expectedUser.getId()), FIRST_USER_MAIL)
+        utils.performByUser(delete(USER_CONTROLLER_PATH + ID, id), SECOND_USER_MAIL)
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+
+        utils.performByUser(delete(USER_CONTROLLER_PATH + ID, id), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        assertEquals(1, userRepository.count());
+
+        assertEquals(countBeforeOperation - 1, userRepository.count());
+        assertFalse(userRepository.existsById(id));
     }
 }

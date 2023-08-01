@@ -26,6 +26,7 @@ public class TestData {
     private static final String RESOURCES = "src/test/resources/";
 
     public static final String FIRST_USER_MAIL = "ivan@google.com";
+    public static final String SECOND_USER_MAIL = "petr@yahoo.com";
 
     @Autowired
     private UserRepository userRepository;
@@ -100,3 +101,4 @@ public class TestData {
     }
 
 }
+

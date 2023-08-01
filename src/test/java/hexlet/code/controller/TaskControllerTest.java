@@ -33,6 +33,7 @@ import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -81,7 +82,7 @@ public class TaskControllerTest {
                 .getResponse();
         final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(tasks).hasSize(2);
+        assertThat(tasks).hasSize((int) taskRepository.count());
     }
 
     @Test
@@ -103,8 +104,8 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Creating a new task")
     public void testCreate() throws Exception {
+        long countBeforeOperation = taskRepository.count();
         List<Label> labels = labelRepository.findAll();
-        labels.stream().map(Label::getId).toList();
         TaskDTO expectedTO = new TaskDTO("Новое имя", "Новое описание", 2, 2,
                 labels.stream().map(Label::getId).collect(Collectors.toList()));
         final var response = utils.performByUser(post(TASKS_CONTROLLER_PATH)
@@ -113,10 +114,13 @@ public class TaskControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
-        assertEquals(3, taskRepository.count());
 
-        final Task actualTask = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final Task resultTask = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
+        final Task actualTask = taskRepository.findById(resultTask.getId()).orElse(null);
+
+        assertNotNull(actualTask);
+        assertEquals(countBeforeOperation + 1, taskRepository.count());
         assertEquals(labels.size(), actualTask.getLabels().size());
         assertEquals(expectedTO.getName(), actualTask.getName());
         assertEquals(expectedTO.getDescription(), actualTask.getDescription());
@@ -127,6 +131,7 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Updating a task")
     public void testUpdate() throws Exception {
+        long countBeforeOperation = taskRepository.count();
         long expectedId = taskRepository.findAll().get(0).getId();
         List<Label> labels = labelRepository.findAll();
         TaskDTO expectedTO = new TaskDTO("Новое имя", "Новое описание", 2, 2,
@@ -135,7 +140,8 @@ public class TaskControllerTest {
                         .content(asJson(expectedTO))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isOk());
-        assertEquals(2, taskRepository.count());
+
+        assertEquals(countBeforeOperation, taskRepository.count());
 
         final var response = utils.performByUser(
                         get(TASKS_CONTROLLER_PATH + ID, expectedId), FIRST_USER_MAIL)
@@ -155,12 +161,13 @@ public class TaskControllerTest {
     @DisplayName("Deleting a task")
     public void testDelete() throws Exception {
         Long id = taskRepository.findAll().get(0).getId();
-        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, id), FIRST_USER_MAIL)
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
         utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, -1), FIRST_USER_MAIL)
                 .andExpect(status().isNotFound())
+                .andReturn()
+                .getResponse();
+
+        utils.performByUser(delete(TASKS_CONTROLLER_PATH + ID, id), FIRST_USER_MAIL)
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
         assertFalse(taskRepository.existsById(id));

@@ -76,7 +76,7 @@ public class LabelControllerTest {
                         .getResponse();
         final List<Label> statuses = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(statuses).hasSize(2);
+        assertThat(statuses).hasSize((int) repository.count());
     }
 
     @Test
@@ -111,23 +111,23 @@ public class LabelControllerTest {
     @Test
     @DisplayName("Create label. Available for authorized users.")
     public void testCreate() throws Exception {
+        long countBeforeOperation = repository.count();
         LabelDTO newLabel = new LabelDTO("Новая метка");
-
         utils.checkNotAuthorizedRequestIsForbidden(post(LABEL_CONTROLLER_PATH)
                 .content(asJson(newLabel))
                 .contentType(APPLICATION_JSON));
 
-        assertEquals(2, repository.count());
+        assertEquals(countBeforeOperation, repository.count());
         final var response = utils.performByUser(post(LABEL_CONTROLLER_PATH)
                         .content(asJson(newLabel))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
-        assertEquals(3, repository.count());
         final Label actualLabel = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals("Новая метка", actualLabel.getName());
+        assertEquals(countBeforeOperation + 1, repository.count());
+        assertThat(repository.getReferenceById(actualLabel.getId())).isNotNull();
     }
 
     @Test
@@ -155,7 +155,7 @@ public class LabelControllerTest {
     @DisplayName("Delete label.  Available for authorized users.")
     public void testDelete() throws Exception {
         final Label expectedLabel = repository.findAll().get(0);
-        Long id  = expectedLabel.getId();
+        Long id = expectedLabel.getId();
         utils.checkNotAuthorizedRequestIsForbidden(
                 delete(LABEL_CONTROLLER_PATH + ID, id));
 

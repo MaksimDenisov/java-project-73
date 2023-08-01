@@ -1,3 +1,5 @@
+# Task manager.
+
 ## Simple task manager. With the ability to use performers, labels and statuses.
 
 [Task Manager](https://task-manager-sx7l.onrender.com/)
@@ -10,8 +12,12 @@
 
 [![Test Coverage](https://api.codeclimate.com/v1/badges/e5ff68d9f4c907649d43/test_coverage)](https://codeclimate.com/github/MaksimDenisov/java-project-73/test_coverage)
 
-### Start with H2DB. http://localhost:8080/ 
-make run-dev 
+##  Start server with H2DB.  
+```sh
+make run-dev  # run server http://localhost:8080
 
-### Generate migrations
+```
+##  Generate migrations
+```sh
 make generate-migrations
+```

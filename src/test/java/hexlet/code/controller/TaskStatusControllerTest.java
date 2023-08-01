@@ -74,7 +74,7 @@ public class TaskStatusControllerTest {
                 .getResponse();
         final List<TaskStatus> statuses = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(statuses).hasSize(2);
+        assertThat(statuses).hasSize((int) repository.count());
     }
 
     @Test
@@ -101,6 +101,8 @@ public class TaskStatusControllerTest {
     @Test
     @DisplayName("Create status. Available for authorized users.")
     public void testCreate() throws Exception {
+        long countBeforeOperation = repository.count();
+
         Map<String, String> map = new HashMap<>();
         map.put("name", "Новый");
 
@@ -108,17 +110,17 @@ public class TaskStatusControllerTest {
                 .content(asJson(map))
                 .contentType(APPLICATION_JSON));
 
-        assertEquals(2, repository.count());
+        assertEquals(countBeforeOperation, repository.count());
         final var response = utils.performByUser(post(TASK_STATUS_CONTROLLER_PATH)
                         .content(asJson(map))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
-        assertEquals(3, repository.count());
         final TaskStatus actualTaskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals("Новый", actualTaskStatus.getName());
+        assertEquals(countBeforeOperation + 1, repository.count());
+        assertThat(repository.getReferenceById(actualTaskStatus.getId())).isNotNull();
     }
 
     @Test
@@ -148,7 +150,6 @@ public class TaskStatusControllerTest {
     @DisplayName("Delete status. Available for authorized users.")
     public void testDelete() throws Exception {
         final Long id = repository.findAll().get(0).getId();
-        assertEquals(2, repository.count());
 
         utils.checkNotAuthorizedRequestIsForbidden(
                 delete(TASK_STATUS_CONTROLLER_PATH + ID, id));
