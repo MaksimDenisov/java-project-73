@@ -30,10 +30,11 @@ import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER
 @RequestMapping("${base-url}" + TASK_STATUS_CONTROLLER_PATH)
 @Tag(name = "Task Statuses")
 public class TaskStatusController {
+
     public static final String TASK_STATUS_CONTROLLER_PATH = "/statuses";
     public static final String ID = "/{id}";
 
-    private TaskStatusService taskStatusService;
+    private final TaskStatusService taskStatusService;
 
     @Operation(summary = "Getting all task statuses.")
     @ApiResponses(@ApiResponse(responseCode = "200", content =

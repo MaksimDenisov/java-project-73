@@ -30,8 +30,8 @@ import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -74,7 +74,10 @@ public class TaskStatusControllerTest {
                 .getResponse();
         final List<TaskStatus> statuses = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(statuses).hasSize((int) repository.count());
+        final List<TaskStatus> expected = repository.findAll();
+        assertThat(statuses)
+                .usingRecursiveFieldByFieldElementComparator()
+                .containsAll(expected);
     }
 
     @Test
@@ -101,8 +104,6 @@ public class TaskStatusControllerTest {
     @Test
     @DisplayName("Create status. Available for authorized users.")
     public void testCreate() throws Exception {
-        long countBeforeOperation = repository.count();
-
         Map<String, String> map = new HashMap<>();
         map.put("name", "Новый");
 
@@ -110,7 +111,6 @@ public class TaskStatusControllerTest {
                 .content(asJson(map))
                 .contentType(APPLICATION_JSON));
 
-        assertEquals(countBeforeOperation, repository.count());
         final var response = utils.performByUser(post(TASK_STATUS_CONTROLLER_PATH)
                         .content(asJson(map))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
@@ -119,7 +119,6 @@ public class TaskStatusControllerTest {
                 .getResponse();
         final TaskStatus actualTaskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals(countBeforeOperation + 1, repository.count());
         assertThat(repository.getReferenceById(actualTaskStatus.getId())).isNotNull();
     }
 

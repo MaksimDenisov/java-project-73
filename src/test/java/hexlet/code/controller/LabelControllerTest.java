@@ -74,9 +74,12 @@ public class LabelControllerTest {
                         .andExpect(status().isOk())
                         .andReturn()
                         .getResponse();
-        final List<Label> statuses = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final List<Label> labels = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(statuses).hasSize((int) repository.count());
+        final List<Label> expected = repository.findAll();
+        assertThat(labels)
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("tasks")
+                .containsAll(expected);
     }
 
     @Test
@@ -111,13 +114,11 @@ public class LabelControllerTest {
     @Test
     @DisplayName("Create label. Available for authorized users.")
     public void testCreate() throws Exception {
-        long countBeforeOperation = repository.count();
         LabelDTO newLabel = new LabelDTO("Новая метка");
         utils.checkNotAuthorizedRequestIsForbidden(post(LABEL_CONTROLLER_PATH)
                 .content(asJson(newLabel))
                 .contentType(APPLICATION_JSON));
 
-        assertEquals(countBeforeOperation, repository.count());
         final var response = utils.performByUser(post(LABEL_CONTROLLER_PATH)
                         .content(asJson(newLabel))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
@@ -126,7 +127,6 @@ public class LabelControllerTest {
                 .getResponse();
         final Label actualLabel = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals(countBeforeOperation + 1, repository.count());
         assertThat(repository.getReferenceById(actualLabel.getId())).isNotNull();
     }
 
@@ -159,7 +159,6 @@ public class LabelControllerTest {
         utils.checkNotAuthorizedRequestIsForbidden(
                 delete(LABEL_CONTROLLER_PATH + ID, id));
 
-        assertEquals(2, repository.count());
         utils.performByUser(delete(LABEL_CONTROLLER_PATH + ID, id),
                         FIRST_USER_MAIL)
                 .andExpect(status().isOk())

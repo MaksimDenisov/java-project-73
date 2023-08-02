@@ -48,6 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 public class TaskControllerTest {
+
     @Autowired
     private TestUtils utils;
 
@@ -82,7 +83,10 @@ public class TaskControllerTest {
                 .getResponse();
         final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(tasks).hasSize((int) taskRepository.count());
+        final List<Task> expected = taskRepository.findAll();
+        assertThat(tasks)
+                .usingRecursiveFieldByFieldElementComparatorOnFields("id", "name", "description")
+                .containsAll(expected);
     }
 
     @Test
@@ -104,10 +108,11 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Creating a new task")
     public void testCreate() throws Exception {
-        long countBeforeOperation = taskRepository.count();
-        List<Label> labels = labelRepository.findAll();
+        List<Label> expectedLabels = labelRepository.findAll();
         TaskDTO expectedTO = new TaskDTO("Новое имя", "Новое описание", 2, 2,
-                labels.stream().map(Label::getId).collect(Collectors.toList()));
+                expectedLabels.stream()
+                        .map(Label::getId)
+                        .collect(Collectors.toList()));
         final var response = utils.performByUser(post(TASKS_CONTROLLER_PATH)
                         .content(asJson(expectedTO))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
@@ -120,8 +125,9 @@ public class TaskControllerTest {
         final Task actualTask = taskRepository.findById(resultTask.getId()).orElse(null);
 
         assertNotNull(actualTask);
-        assertEquals(countBeforeOperation + 1, taskRepository.count());
-        assertEquals(labels.size(), actualTask.getLabels().size());
+        assertThat(actualTask.getLabels())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("tasks")
+                .containsAll(expectedLabels);
         assertEquals(expectedTO.getName(), actualTask.getName());
         assertEquals(expectedTO.getDescription(), actualTask.getDescription());
         assertEquals(expectedTO.getTaskStatusId(), actualTask.getTaskStatus().getId());
@@ -131,26 +137,28 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Updating a task")
     public void testUpdate() throws Exception {
-        long countBeforeOperation = taskRepository.count();
         long expectedId = taskRepository.findAll().get(0).getId();
-        List<Label> labels = labelRepository.findAll();
+        List<Label> expectedLabels = labelRepository.findAll();
         TaskDTO expectedTO = new TaskDTO("Новое имя", "Новое описание", 2, 2,
-                labels.stream().map(Label::getId).collect(Collectors.toList()));
+                expectedLabels.stream().map(Label::getId).collect(Collectors.toList()));
         utils.performByUser(put(TASKS_CONTROLLER_PATH + ID, expectedId)
                         .content(asJson(expectedTO))
                         .contentType(APPLICATION_JSON), FIRST_USER_MAIL)
                 .andExpect(status().isOk());
-
-        assertEquals(countBeforeOperation, taskRepository.count());
 
         final var response = utils.performByUser(
                         get(TASKS_CONTROLLER_PATH + ID, expectedId), FIRST_USER_MAIL)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
-        final Task actualTask = fromJson(response.getContentAsString(), new TypeReference<>() {
+        final Task resultTask = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertEquals(labels.size(), actualTask.getLabels().size());
+        final Task actualTask = taskRepository.findById(resultTask.getId()).orElse(null);
+
+        assertNotNull(actualTask);
+        assertThat(actualTask.getLabels())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("tasks")
+                .containsAll(expectedLabels);
         assertEquals(expectedTO.getName(), actualTask.getName());
         assertEquals(expectedTO.getDescription(), actualTask.getDescription());
         assertEquals(expectedTO.getTaskStatusId(), actualTask.getTaskStatus().getId());

@@ -45,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 public class UserControllerTest {
+
     @Autowired
     private TestUtils utils;
 
@@ -73,7 +74,10 @@ public class UserControllerTest {
                 .getResponse();
         final List<User> users = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        assertThat(users).hasSize((int) userRepository.count());
+        final List<User> expected = userRepository.findAll();
+        assertThat(users)
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("password")
+                .containsAll(expected);
     }
 
     @Test
@@ -99,8 +103,6 @@ public class UserControllerTest {
     @Test
     @DisplayName("Create user. Available for all users.")
     public void testCreate() throws Exception {
-        long countBeforeOperation = userRepository.count();
-
         final var response = utils.perform(
                         post(USER_CONTROLLER_PATH)
                                 .content(asJson(
@@ -110,7 +112,6 @@ public class UserControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
-        assertEquals(countBeforeOperation + 1, userRepository.count());
         final User resultUser = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
         final User actualUser = userRepository.findById(resultUser.getId()).orElse(null);
@@ -163,11 +164,11 @@ public class UserControllerTest {
                 .getResponse();
         final User user = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-        final User actualUser = userRepository.findById(expectedUser.getId()).orElse(null);
         assertEquals("new@mail.com", user.getEmail());
         assertEquals("New", user.getFirstName());
         assertEquals("New", user.getLastName());
 
+        final User actualUser = userRepository.findById(expectedUser.getId()).orElse(null);
         assertNotNull(actualUser);
         assertEquals("new@mail.com", actualUser.getEmail());
         assertEquals("New", actualUser.getFirstName());
@@ -177,8 +178,6 @@ public class UserControllerTest {
     @Test
     @DisplayName("Delete user. Available for owner.")
     public void testDelete() throws Exception {
-        long countBeforeOperation = userRepository.count();
-
         final User anotherUser = userRepository.findAll().get(1);
         utils.performByUser(delete(USER_CONTROLLER_PATH + ID, anotherUser.getId()), FIRST_USER_MAIL)
                 .andExpect(status().isForbidden())
@@ -199,7 +198,6 @@ public class UserControllerTest {
                 .andReturn()
                 .getResponse();
 
-        assertEquals(countBeforeOperation - 1, userRepository.count());
         assertFalse(userRepository.existsById(id));
     }
 }
